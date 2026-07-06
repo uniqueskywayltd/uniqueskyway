@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
+import { resolveAppUrl } from "@/lib/env";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,9 +19,7 @@ export const metadata: Metadata = {
     template: `%s | ${appName}`,
   },
   description: appDescription,
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://uniqueskyway.com",
-  ),
+  metadataBase: new URL(resolveAppUrl()),
   applicationName: appName,
   robots: {
     index: false,

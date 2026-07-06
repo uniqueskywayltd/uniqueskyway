@@ -4,12 +4,11 @@ import { Award, Globe2, Shield, Users } from "lucide-react";
 import Image from "next/image";
 import { section } from "@/components/marketing/marketing-ui";
 
-/** Platform capabilities — distinct from hero dashboard preview and about-page company stats */
+/** Product capability highlights — matches hero dashboard preview */
 const platformStats = [
-  { label: "Investment tiers", value: "4", suffix: "plans" },
-  { label: "Transaction history", value: "Full", suffix: "audit trail" },
-  { label: "Referral program", value: "10%", suffix: "commission" },
-  { label: "Investor support", value: "Dedicated", suffix: "team" },
+  { label: "Ledger sync", value: "Live", suffix: "" },
+  { label: "Plan tiers", value: "4", suffix: "" },
+  { label: "Account security", value: "2FA", suffix: "" },
 ];
 
 /** Company track record — used on About, not duplicated on homepage */
@@ -23,7 +22,7 @@ export const companyStats = [
 export function StatsBar({ stats = platformStats }: { stats?: typeof platformStats }) {
   return (
     <section className="border-y border-border/50 bg-primary text-primary-foreground" aria-label="Platform highlights">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 sm:gap-8 sm:px-6 sm:py-12 md:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-7xl grid-cols-3 gap-6 px-4 py-10 sm:gap-8 sm:px-6 sm:py-12 lg:px-8">
         {stats.map((stat) => (
           <div key={stat.label} className="text-center md:text-left">
             <p className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl lg:text-4xl">

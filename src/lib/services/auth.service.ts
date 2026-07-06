@@ -17,7 +17,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { FEATURE_FLAGS } from "@/lib/constants/feature-flags";
-import { isStorageConfigured } from "@/lib/env";
+import { isStorageConfigured, resolveAppUrl } from "@/lib/env";
 import { auditService } from "./audit.service";
 import { authLockoutService } from "./auth-lockout.service";
 import { emailService } from "./email.service";
@@ -27,7 +27,7 @@ import { sessionService } from "./session.service";
 import { fail, ok } from "./base";
 import type { ActorContext, ServiceResult } from "./types";
 
-const appUrl = () => process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const appUrl = resolveAppUrl;
 
 export type RegisterAvatarInput = {
   buffer: Buffer;

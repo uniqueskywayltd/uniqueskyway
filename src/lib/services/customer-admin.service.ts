@@ -20,6 +20,7 @@ import {
   userSessions,
 } from "@/db/schema";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveAppUrl } from "@/lib/env";
 import { auditService } from "./audit.service";
 import { authLockoutService } from "./auth-lockout.service";
 import { guardDatabase } from "./infrastructure-guard";
@@ -558,7 +559,7 @@ export class CustomerAdminService {
       if (!profile) return fail("CUSTOMER_NOT_FOUND", "Customer not found");
 
       const admin = createAdminClient();
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+      const appUrl = resolveAppUrl();
       const { data, error } = await admin.auth.admin.generateLink({
         type: "recovery",
         email: profile.email,

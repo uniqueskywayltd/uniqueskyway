@@ -12,12 +12,15 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { resolveAppUrl } from "@/lib/env";
+
+const appUrl = resolveAppUrl();
 
 const brand = {
   name: "Unique Sky Way",
   email: "info@uniqueskyway.com",
-  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://uniqueskyway.com",
-  logoUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "https://uniqueskyway.com"}/brand/logo.png`,
+  url: appUrl,
+  logoUrl: `${appUrl}/brand/logo.png`,
 };
 
 type EmailLayoutProps = {

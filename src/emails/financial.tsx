@@ -3,6 +3,7 @@ import {
   plainTransactionalEmail,
   type DetailLine,
 } from "./components/transactional-email";
+import { resolveAppUrl } from "@/lib/env";
 
 type BaseProps = {
   name: string;
@@ -11,8 +12,7 @@ type BaseProps = {
   dashboardUrl?: string;
 };
 
-const defaultDashboard = () =>
-  `${process.env.NEXT_PUBLIC_APP_URL ?? "https://uniqueskyway.com"}/dashboard`;
+const defaultDashboard = () => `${resolveAppUrl()}/dashboard`;
 
 function details(props: BaseProps, extra: DetailLine[] = []): DetailLine[] {
   const base: DetailLine[] = [];

@@ -3,6 +3,7 @@
 **Project:** Unique Sky Way  
 **Version:** 1.0.0 Release Candidate (internal)  
 **Package version:** `0.1.0` (unchanged until client acceptance)  
+**UAT URL:** https://uniqueskyway.com  
 **UAT start:** July 6, 2026  
 **Engineering status:** COMPLETE — feature development frozen
 

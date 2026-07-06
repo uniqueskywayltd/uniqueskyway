@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCustomerProfile, getSessionUser } from "@/lib/auth/session";
 import { profileService } from "@/lib/services/profile.service";
-import { isStorageConfigured } from "@/lib/env";
+import { isStorageConfigured, resolveAppUrl } from "@/lib/env";
 import { PageHeader } from "@/components/design-system/page-header";
 import { ProfileForm } from "@/components/dashboard/profile-form";
 import { ServiceErrorState } from "@/components/dashboard/service-error-state";
@@ -31,7 +31,7 @@ export default async function ProfilePage() {
       />
       <ProfileForm
         data={data}
-        appUrl={process.env.NEXT_PUBLIC_APP_URL ?? "https://uniqueskyway.com"}
+        appUrl={resolveAppUrl()}
         storageAvailable={isStorageConfigured()}
       />
     </div>

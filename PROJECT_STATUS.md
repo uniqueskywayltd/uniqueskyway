@@ -13,7 +13,7 @@
 | **Release stage** | RC1 — 1.0.0 Release Candidate (internal) |
 | **Package version** | `0.1.0` (semantic `1.0.0` after client acceptance) |
 | **Awaiting** | Client UAT |
-| **Deployment** | RC1 live at https://platform-seven-sage.vercel.app — env vars required for auth/data |
+| **Deployment** | Live at https://uniqueskyway.com (Vercel production) |
 
 ---
 
@@ -34,7 +34,7 @@
 |---------|--------|
 | GitHub | `uniqueskywayltd/uniqueskyway` |
 | Supabase | `cdgvfhqyctnbvnykodek` — migrations `0000`–`0015` applied |
-| Vercel | CLI authenticated |
+| Vercel | Production domain `https://uniqueskyway.com` |
 
 ---
 

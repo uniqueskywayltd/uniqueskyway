@@ -85,13 +85,24 @@ export function isResendConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY);
 }
 
-/** Canonical public URL for metadata, emails, and social previews */
+/** Canonical public URL for metadata, emails, auth redirects, and social previews */
 export function resolveAppUrl(): string {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  const explicit = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (explicit) return explicit;
+
+  const production = process.env.VERCEL_PROJECT_PRODUCTION_URL?.replace(/\/$/, "");
+  if (production) {
+    return production.startsWith("http") ? production : `https://${production}`;
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
+
+  const deployment = process.env.VERCEL_URL;
+  if (deployment) {
+    return `https://${deployment}`;
   }
+
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3000";
+  }
+
   return "https://uniqueskyway.com";
 }

@@ -7,15 +7,16 @@ import { marketingGhostLink, marketingOutlineBtn, marketingPrimaryBtn } from "@/
 import { cn } from "@/lib/utils";
 
 const trustItems = [
-  { icon: ShieldCheck, title: "Bank-grade security" },
-  { icon: TrendingUp, title: "Transparent returns" },
-  { icon: Wallet, title: "Portfolio control" },
+  { icon: ShieldCheck, title: "Bank-grade security", text: "Encrypted sessions & audit logs" },
+  { icon: TrendingUp, title: "Transparent returns", text: "Daily ROI in your dashboard" },
+  { icon: Wallet, title: "Portfolio control", text: "Deposits, withdrawals & ledger" },
 ] as const;
 
-const heroMetrics = [
-  { value: "$12M+", label: "Assets managed" },
-  { value: "9+", label: "Years trusted" },
-  { value: "72+", label: "Global markets" },
+/** Dashboard preview cells — sample product UI, not company marketing stats */
+const dashboardPreview = [
+  { value: "Live", label: "Ledger sync" },
+  { value: "4", label: "Plan tiers" },
+  { value: "2FA", label: "Account security" },
 ] as const;
 
 export function HeroSection() {
@@ -37,7 +38,7 @@ export function HeroSection() {
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
-              Established 2017
+              Established 2017 · Fayetteville, Arkansas
             </p>
 
             <h1 className="mt-6 max-w-[18ch] text-4xl font-semibold leading-[1.12] tracking-tight text-white sm:text-5xl lg:max-w-[14ch] lg:text-[3.25rem]">
@@ -71,25 +72,15 @@ export function HeroSection() {
               <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </Link>
 
-            <div className="mt-12 grid w-full max-w-md grid-cols-3 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 lg:hidden">
-              {heroMetrics.map((m) => (
-                <div key={m.label} className="bg-slate-950/90 px-3 py-4 text-center">
-                  <p className="text-lg font-semibold tabular-nums text-white">{m.value}</p>
-                  <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                    {m.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-14 hidden w-full max-w-xl gap-4 lg:grid lg:grid-cols-3">
+            <div className="mt-10 grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-3">
               {trustItems.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4"
+                  className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-left"
                 >
-                  <item.icon className="h-4 w-4 text-slate-300" aria-hidden />
+                  <item.icon className="h-4 w-4 text-amber-400/90" aria-hidden />
                   <p className="mt-2.5 text-sm font-medium text-white">{item.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.text}</p>
                 </div>
               ))}
             </div>
@@ -126,7 +117,7 @@ export function HeroSection() {
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-emerald-400" aria-hidden />
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">YTD</p>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500">YTD return</p>
                       <p className="text-base font-semibold tabular-nums text-white">+24.8%</p>
                     </div>
                   </div>
@@ -134,9 +125,9 @@ export function HeroSection() {
               </div>
 
               <div className="grid grid-cols-3 divide-x divide-white/10 border-t border-white/10">
-                {heroMetrics.map((m) => (
-                  <div key={m.label} className="px-3 py-4 text-center sm:py-5">
-                    <p className="text-base font-semibold tabular-nums text-white sm:text-lg">
+                {dashboardPreview.map((m) => (
+                  <div key={m.label} className="px-2 py-4 text-center sm:px-3 sm:py-5">
+                    <p className="text-sm font-semibold tabular-nums text-white sm:text-base">
                       {m.value}
                     </p>
                     <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">
@@ -145,14 +136,6 @@ export function HeroSection() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="absolute -bottom-4 -left-2 hidden max-w-[210px] rounded-xl border border-white/10 bg-slate-950/95 p-4 shadow-lg sm:block lg:-left-5">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">
-                Platform trust
-              </p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-white">$12M+</p>
-              <p className="text-xs text-slate-400">Assets under management</p>
             </div>
           </div>
         </div>

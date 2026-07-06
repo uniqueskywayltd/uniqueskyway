@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { MarketingLayout } from "@/components/layout/marketing-layout";
 import { PageHero } from "@/components/marketing/page-hero";
-import { StatsBar } from "@/components/marketing/trust-section";
+import { CompanyStatsBar } from "@/components/marketing/trust-section";
 import { buttonVariants } from "@/components/ui/button";
 
 const values = [
@@ -113,7 +113,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <StatsBar />
+      <CompanyStatsBar />
     </MarketingLayout>
   );
 }

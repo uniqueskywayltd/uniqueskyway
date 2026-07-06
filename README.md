@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Unique Sky Way Platform
 
-## Getting Started
+Modern investment and financial services platform rebuilt on Next.js 16, Supabase, and Vercel.
 
-First, run the development server:
+**Status:** Feature-complete v1.0 — staging validation and production deployment pending.
+
+---
+
+## Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd platform
+cp .env.example .env.local
+# Fill in Supabase credentials and DATABASE_URL
+
+npm install
+npm run db:migrate      # Apply migrations 0000–0013
+npm run db:verify       # Verify infrastructure
+npm run bootstrap:admin -- --email=admin@example.com --password=SecurePass123 --name="Super Admin"
+
+npm run dev             # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality Gates
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run type-check   # TypeScript
+npm run lint         # ESLint
+npm run build        # Production build
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Key Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Script | Purpose |
+|--------|---------|
+| `npm run db:migrate` | Apply SQL migrations |
+| `npm run db:verify` | Infrastructure verification |
+| `npm run db:seed` | Re-seed system data |
+| `npm run bootstrap:admin` | Create Super Admin |
+| `npm run migration:dry-run` | Legacy migration validation |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Document | Audience |
+|----------|----------|
+| [FINAL_HANDOVER.md](./FINAL_HANDOVER.md) | **Start here** — complete handover index |
+| [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) | Engineers |
+| [CLIENT_ADMIN_GUIDE.md](./CLIENT_ADMIN_GUIDE.md) | Operations staff |
+| [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) | Launch coordination |
+| [TEST_PLAN.md](./TEST_PLAN.md) | QA validation |
+| [STAGING_SIGNOFF.md](./STAGING_SIGNOFF.md) | Sign-off record |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Stack
+
+Next.js 16 · React 19 · Drizzle ORM · Supabase · Resend · Vercel · Tailwind CSS 4 · shadcn/ui
+
+---
+
+## License
+
+Proprietary — Unique Sky Way. All rights reserved.

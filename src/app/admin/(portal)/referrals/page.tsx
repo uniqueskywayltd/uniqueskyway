@@ -1,0 +1,101 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getAdminProfile, getSessionUser } from "@/lib/auth/session";
+import { referralAdminService } from "@/lib/services/referral-admin.service";
+import { formatMoney } from "@/lib/utils/money";
+import { StatCard } from "@/components/design-system/stat-card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ServiceErrorState } from "@/components/dashboard/service-error-state";
+
+export default async function AdminReferralsPage() {
+  const user = await getSessionUser();
+  if (!user) redirect("/admin/login");
+  const admin = await getAdminProfile(user.authUserId);
+  if (!admin) redirect("/admin/login");
+
+  const [overview, commissions] = await Promise.all([
+    referralAdminService.getOverview(),
+    referralAdminService.listCommissions(1, 30),
+  ]);
+
+  if (!overview.success) {
+    return <ServiceErrorState code={overview.error.code} message={overview.error.message} />;
+  }
+
+  return (
+    <div className="space-y-8">
+      <h1 className="text-2xl font-semibold">Referral Administration</h1>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard title="Total relationships" value={String(overview.data.totalRelationships)} />
+        <StatCard title="Commissions paid" value={formatMoney(overview.data.totalCommissionsPaid)} />
+        <StatCard title="Commissions today" value={formatMoney(overview.data.commissionsToday)} />
+      </div>
+
+      <div>
+        <h2 className="mb-4 font-semibold">Top referrers</h2>
+        <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-slate-800 hover:bg-transparent">
+                <TableHead className="text-slate-400">Referrer</TableHead>
+                <TableHead className="text-slate-400">Code</TableHead>
+                <TableHead className="text-slate-400">Referrals</TableHead>
+                <TableHead className="text-slate-400">Commissions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {overview.data.topReferrers.map((r) => (
+                <TableRow key={r.profileId} className="border-slate-800">
+                  <TableCell>
+                    <Link href={`/admin/customers/${r.profileId}`} className="hover:underline">
+                      {r.fullName}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{r.referralCode}</TableCell>
+                  <TableCell>{r.directReferrals}</TableCell>
+                  <TableCell>{formatMoney(r.totalCommissions)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {commissions.success ? (
+        <div>
+          <h2 className="mb-4 font-semibold">Commission history</h2>
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-800 hover:bg-transparent">
+                  <TableHead className="text-slate-400">Date</TableHead>
+                  <TableHead className="text-slate-400">Referrer</TableHead>
+                  <TableHead className="text-slate-400">Referred</TableHead>
+                  <TableHead className="text-slate-400">Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {commissions.data.items.map((c) => (
+                  <TableRow key={c.id} className="border-slate-800">
+                    <TableCell className="text-sm">{new Date(c.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>{c.referrerName}</TableCell>
+                    <TableCell>{c.referredName}</TableCell>
+                    <TableCell>{formatMoney(c.commissionAmount)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}

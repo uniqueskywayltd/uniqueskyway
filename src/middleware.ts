@@ -6,6 +6,8 @@ import {
   isAccessGateRequired,
   isBlockedCrawler,
   isGateExemptPath,
+  isPublicPreviewPath,
+  isSocialPreviewBot,
   isValidAccessToken,
   hasValidAccessCookie,
   PRIVACY_HEADERS,
@@ -44,7 +46,10 @@ export async function middleware(request: NextRequest) {
     return forbiddenCrawlerResponse();
   }
 
-  if (!exempt && isAccessGateRequired(host)) {
+  const socialPreview =
+    isSocialPreviewBot(userAgent) && isPublicPreviewPath(pathname);
+
+  if (!exempt && isAccessGateRequired(host) && !socialPreview) {
     const accessParam = request.nextUrl.searchParams.get(ACCESS_QUERY_PARAM);
     const accessCookie = request.cookies.get(ACCESS_COOKIE_NAME)?.value;
 

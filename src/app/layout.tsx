@@ -8,20 +8,27 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const appName = process.env.NEXT_PUBLIC_APP_NAME ?? "Unique Sky Way";
+const appDescription =
+  "Investment and financial services platform with transparent portfolio management and secure client access.";
+
 export const metadata: Metadata = {
   title: {
-    default: "Unique Sky Way | Investment & Financial Services",
-    template: "%s | Unique Sky Way",
+    default: `${appName} | Investment & Financial Services`,
+    template: `%s | ${appName}`,
   },
-  description:
-    "Unique Sky Way is a modern investment and financial services platform offering transparent portfolio management, secure transactions, and professional investor support.",
+  description: appDescription,
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "https://uniqueskyway.com",
   ),
+  applicationName: appName,
   robots: {
     index: false,
     follow: false,
     nocache: true,
+    noimageindex: true,
+    noarchive: true,
+    nosnippet: true,
     googleBot: {
       index: false,
       follow: false,
@@ -36,6 +43,27 @@ export const metadata: Metadata = {
       { url: "/brand/icon.webp", sizes: "176x176", type: "image/webp" },
     ],
     apple: "/brand/icon.webp",
+  },
+  openGraph: {
+    type: "website",
+    siteName: appName,
+    title: appName,
+    description: appDescription,
+    images: [
+      {
+        url: "/brand/og-image.png",
+        width: 512,
+        height: 512,
+        alt: `${appName} logo`,
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: appName,
+    description: appDescription,
+    images: ["/brand/og-image.png"],
   },
 };
 

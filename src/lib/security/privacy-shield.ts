@@ -26,7 +26,6 @@ const BLOCKED_CRAWLER_PATTERNS = [
   /seznambot/i,
   /sogou/i,
   /exabot/i,
-  /facebot/i,
   /ia_archiver/i,
   /archive\.org_bot/i,
   /ccbot/i,
@@ -37,8 +36,25 @@ const BLOCKED_CRAWLER_PATTERNS = [
   /perplexitybot/i,
   /bytespider/i,
   /amazonbot/i,
-  /meta-externalagent/i,
   /facebookcatalog/i,
+] as const;
+
+/** Link-preview fetchers (Telegram, WhatsApp, etc.) — allowed for OG metadata only */
+const SOCIAL_PREVIEW_BOT_PATTERNS = [
+  /facebookexternalhit/i,
+  /facebot/i,
+  /meta-externalagent/i,
+  /whatsapp/i,
+  /telegrambot/i,
+  /twitterbot/i,
+  /linkedinbot/i,
+  /slackbot/i,
+  /discordbot/i,
+  /skypeuripreview/i,
+  /vkshare/i,
+  /embedly/i,
+  /pinterestbot/i,
+  /redditbot/i,
 ] as const;
 
 /** Generic bot patterns — blocked unless explicitly allowed */
@@ -57,8 +73,8 @@ const GENERIC_BOT_PATTERNS = [
   /phantomjs/i,
 ] as const;
 
-/** Allowed bots — empty: maximum privacy, no crawler exceptions */
-const ALLOWED_BOT_PATTERNS: RegExp[] = [];
+/** Allowed bots — social preview fetchers only (not search indexers) */
+const ALLOWED_BOT_PATTERNS: RegExp[] = [...SOCIAL_PREVIEW_BOT_PATTERNS];
 
 export const PRIVACY_HEADERS: Record<string, string> = {
   "X-Robots-Tag": "noindex, nofollow, noarchive, nosnippet, noimageindex, nocache, unavailable_after: 2020-01-01",
@@ -85,6 +101,31 @@ function timingSafeEqualStrings(a: string, b: string): boolean {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return result === 0;
+}
+
+export function isSocialPreviewBot(userAgent: string | null): boolean {
+  if (!userAgent) return false;
+  return SOCIAL_PREVIEW_BOT_PATTERNS.some((pattern) => pattern.test(userAgent));
+}
+
+/** Public marketing pages that may return link-preview metadata to social bots */
+export function isPublicPreviewPath(pathname: string): boolean {
+  if (pathname === "/") return true;
+  const publicPrefixes = [
+    "/about",
+    "/contact",
+    "/faq",
+    "/how-it-works",
+    "/investments",
+    "/privacy",
+    "/referrals",
+    "/security",
+    "/services",
+    "/terms",
+  ];
+  return publicPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 export function isBlockedCrawler(userAgent: string | null): boolean {

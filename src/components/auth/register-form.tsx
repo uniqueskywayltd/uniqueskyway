@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { isMathCaptchaCorrect, randomMathDigit } from "@/lib/utils/math-captcha";
 
 function getPasswordStrength(password: string) {
-  if (!password) return { score: 0, label: "", color: "bg-white/10" };
+  if (!password) return { score: 0, label: "", color: "bg-muted" };
   let score = 0;
   if (password.length >= 8) score++;
   if (password.length >= 12) score++;
@@ -82,7 +82,7 @@ function RegisterFormInner() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error ? (
-        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
@@ -133,7 +133,7 @@ function RegisterFormInner() {
             disabled={isLoading}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border-white/10 bg-white/[0.04] pl-10 text-white placeholder:text-slate-600 focus-visible:border-amber-400/40 focus-visible:ring-amber-400/20"
+            className="pl-10"
           />
         </AuthInputIcon>
         {password ? (
@@ -144,12 +144,12 @@ function RegisterFormInner() {
                   key={i}
                   className={cn(
                     "h-1 flex-1 rounded-full transition-colors",
-                    i <= strength.score ? strength.color : "bg-white/10",
+                    i <= strength.score ? strength.color : "bg-muted",
                   )}
                 />
               ))}
             </div>
-            <p className="text-xs text-slate-500">{strength.label}</p>
+            <p className="text-xs text-muted-foreground">{strength.label}</p>
           </div>
         ) : null}
       </AuthField>
@@ -164,7 +164,7 @@ function RegisterFormInner() {
             minLength={8}
             required
             disabled={isLoading}
-            className="border-white/10 bg-white/[0.04] pl-10 text-white placeholder:text-slate-600 focus-visible:border-amber-400/40 focus-visible:ring-amber-400/20"
+            className="pl-10"
             onChange={(e) => {
               e.target.setCustomValidity(e.target.value !== password ? "Passwords do not match" : "");
             }}
@@ -187,20 +187,19 @@ function RegisterFormInner() {
 
       <ProfilePhotoField disabled={isLoading} onChange={setAvatarFile} />
 
-      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3">
+      <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
         <MathCaptchaField
           a={mathA}
           b={mathB}
           value={mathAnswer}
           onChange={setMathAnswer}
           disabled={isLoading}
-          className="text-slate-300 [&_input]:border-white/10 [&_input]:bg-white/[0.04] [&_input]:text-white"
         />
       </div>
 
-      <div className="flex items-start gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-4">
-        <Checkbox id="terms" name="terms" required disabled={isLoading} className="mt-0.5 border-white/20" />
-        <label htmlFor="terms" className="text-sm leading-relaxed text-slate-400">
+      <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-4">
+        <Checkbox id="terms" name="terms" required disabled={isLoading} className="mt-0.5" />
+        <label htmlFor="terms" className="text-sm leading-relaxed text-muted-foreground">
           I agree to the{" "}
           <Link href="/terms" className={authLinkClass}>
             Terms of Service
@@ -229,7 +228,7 @@ function RegisterFormInner() {
 
 export function RegisterForm() {
   return (
-    <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-white/5" />}>
+    <Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-muted" />}>
       <RegisterFormInner />
     </Suspense>
   );

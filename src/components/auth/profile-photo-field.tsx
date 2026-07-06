@@ -34,15 +34,15 @@ export function ProfilePhotoField({ disabled, onChange }: ProfilePhotoFieldProps
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-slate-300">Profile photo</p>
+      <p className="text-sm font-medium text-foreground">Profile photo</p>
       <div className="flex items-center gap-4">
         <button
           type="button"
           disabled={disabled}
           onClick={() => inputRef.current?.click()}
           className={cn(
-            "relative flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-white/[0.04] transition-colors",
-            "hover:border-amber-400/35 hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50",
+            "relative flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-muted/40 transition-colors",
+            "hover:border-primary/30 hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             disabled && "pointer-events-none opacity-50",
           )}
           aria-label="Upload profile photo"
@@ -51,7 +51,7 @@ export function ProfilePhotoField({ disabled, onChange }: ProfilePhotoFieldProps
             // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="" className="h-full w-full object-cover" />
           ) : (
-            <Camera className="h-5 w-5 text-slate-500" />
+            <Camera className="h-5 w-5 text-muted-foreground" />
           )}
         </button>
 
@@ -63,7 +63,7 @@ export function ProfilePhotoField({ disabled, onChange }: ProfilePhotoFieldProps
               handleFile(null);
               if (inputRef.current) inputRef.current.value = "";
             }}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 text-slate-500 transition-colors hover:border-white/20 hover:text-slate-300"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Remove photo"
           >
             <X className="h-4 w-4" />

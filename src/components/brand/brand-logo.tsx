@@ -11,7 +11,7 @@ type BrandLogoProps = {
   width?: number;
   className?: string;
   priority?: boolean;
-  /** Footer and dark sections use the dark mark. Light mark is for dark backgrounds. */
+  /** `light` = colored logo for light backgrounds. `dark` = light/white logo for dark backgrounds. */
   variant?: "theme" | "dark" | "light";
 };
 

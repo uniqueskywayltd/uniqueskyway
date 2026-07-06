@@ -90,14 +90,14 @@ function LoginFormInner() {
             autoComplete="current-password"
             required
             disabled={isLoading}
-            className="border-white/10 bg-white/[0.04] pl-10 text-white placeholder:text-slate-600 focus-visible:border-amber-400/40 focus-visible:ring-amber-400/20"
+            className="pl-10"
           />
         </AuthInputIcon>
       </AuthField>
 
       <div className="flex items-center gap-2.5">
-        <Checkbox id="remember" name="remember" disabled={isLoading} className="border-white/20" />
-        <label htmlFor="remember" className="text-sm text-slate-400">
+        <Checkbox id="remember" name="remember" disabled={isLoading} />
+        <label htmlFor="remember" className="text-sm text-muted-foreground">
           Keep me signed in
         </label>
       </div>
@@ -118,7 +118,7 @@ function LoginFormInner() {
 
 export function LoginForm() {
   return (
-    <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-white/5" />}>
+    <Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
       <LoginFormInner />
     </Suspense>
   );

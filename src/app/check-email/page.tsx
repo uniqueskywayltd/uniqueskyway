@@ -40,29 +40,28 @@ export default function CheckEmailPage() {
         </p>
       }
     >
-      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10">
-          <Mail className="h-6 w-6 text-amber-400" />
+      <div className="rounded-xl border border-border bg-muted/30 p-6 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-200 bg-amber-50">
+          <Mail className="h-6 w-6 text-amber-600" />
         </div>
-        <p className="mt-4 text-sm text-slate-400">
+        <p className="mt-4 text-sm text-muted-foreground">
           Didn&apos;t receive the email? Check spam or resend below.
         </p>
       </div>
 
       <div className="mt-6 space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300">Your email address</Label>
+          <Label htmlFor="email">Your email address</Label>
           <Input
             id="email"
             type="email"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-white/10 bg-white/[0.04] text-white placeholder:text-slate-600 focus-visible:border-amber-400/40 focus-visible:ring-amber-400/20"
           />
         </div>
         {sent ? (
-          <p className="text-sm text-emerald-400">If an account exists, a new link has been sent.</p>
+          <p className="text-sm text-emerald-600">If an account exists, a new link has been sent.</p>
         ) : null}
         <Button className={authSubmitClass} onClick={resend} disabled={loading || !email}>
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

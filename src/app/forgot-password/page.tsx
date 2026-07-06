@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       }
     >
       {sent ? (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-center text-sm text-emerald-300">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center text-sm text-emerald-800">
           If an account exists with that email, you will receive a password reset link shortly.
         </div>
       ) : (

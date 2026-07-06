@@ -63,7 +63,7 @@ export default function AdminLoginPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-5">
         {error ? (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         ) : null}
@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
               name="password"
               required
               disabled={loading}
-              className="border-white/10 bg-white/[0.04] pl-10 text-white placeholder:text-slate-600 focus-visible:border-amber-400/40 focus-visible:ring-amber-400/20"
+              className="pl-10"
             />
           </AuthInputIcon>
         </AuthField>

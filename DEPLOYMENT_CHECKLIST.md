@@ -149,7 +149,7 @@ Verify `vercel.json` crons deployed:
 | Job | Path | Schedule |
 |-----|------|----------|
 | ROI accrual | `/api/cron/roi` | `0 6 * * *` (06:00 UTC daily) |
-| Notifications | `/api/cron/notifications` | `*/15 * * * *` |
+| Notifications | `/api/cron/notifications` | `0 7 * * *` on Vercel Hobby (RC1); restore `*/15 * * * *` on Pro at launch |
 
 - [ ] Crons visible in Vercel dashboard
 - [ ] Manual trigger succeeds:

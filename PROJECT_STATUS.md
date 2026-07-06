@@ -13,7 +13,7 @@
 | **Release stage** | RC1 — 1.0.0 Release Candidate (internal) |
 | **Package version** | `0.1.0` (semantic `1.0.0` after client acceptance) |
 | **Awaiting** | Client UAT |
-| **Deployment** | BLOCKED pending client approval |
+| **Deployment** | Preview deployed — production env vars and Pro cron plan pending client approval |
 
 ---
 

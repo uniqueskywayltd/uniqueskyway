@@ -23,7 +23,7 @@ export function AdminPaymentMethodsManager({ methods }: { methods: PaymentMethod
   async function toggleActive(id: string, isActive: boolean) {
     setLoading(id);
     try {
-      const res = await fetch("/api/admin/payment-methods", {
+      const res = await fetch("/api/hard/auth/payment-methods", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, isActive }),

@@ -17,7 +17,7 @@ export function AdminGlobalSearch() {
     if (query.length < 2) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/search?q=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/hard/auth/search?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       setResults(data);
     } finally {

@@ -44,7 +44,7 @@ export function AdminLedgerExplorer({
   async function submitCorrection() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/ledger", {
+      const res = await fetch("/api/hard/auth/ledger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(correction),

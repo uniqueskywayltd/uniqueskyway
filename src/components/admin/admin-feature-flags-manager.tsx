@@ -19,7 +19,7 @@ export function AdminFeatureFlagsManager({ flags }: { flags: FlagRow[] }) {
   async function toggle(key: string, enabled: boolean) {
     setLoading(key);
     try {
-      const res = await fetch("/api/admin/feature-flags", {
+      const res = await fetch("/api/hard/auth/feature-flags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, enabled }),

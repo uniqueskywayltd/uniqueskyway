@@ -37,7 +37,7 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
         body.reason = adjustReason;
       }
 
-      const res = await fetch(`/api/admin/investments/${investment.id}`, {
+      const res = await fetch(`/api/hard/auth/investments/${investment.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -258,7 +258,7 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
         </div>
       </div>
 
-      <Link href="/admin/investments" className={buttonVariants({ variant: "outline" })}>
+      <Link href="/hard/auth/investments" className={buttonVariants({ variant: "outline" })}>
         Back to investments
       </Link>
     </div>

@@ -18,6 +18,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { FEATURE_FLAGS } from "@/lib/constants/feature-flags";
 import { isStorageConfigured, resolveAppUrl } from "@/lib/env";
+import { clearImpersonation, clearStaffSession } from "@/lib/auth/impersonation";
 import { auditService } from "./audit.service";
 import { authLockoutService } from "./auth-lockout.service";
 import { emailService } from "./email.service";
@@ -302,6 +303,8 @@ export class AuthService {
       }
     }
 
+    await clearImpersonation();
+    await clearStaffSession();
     await supabase.auth.signOut();
     return ok(undefined);
   }

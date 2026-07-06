@@ -43,7 +43,7 @@ export function MigrationDashboard({
   const loadRuns = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/migration");
+      const res = await fetch("/api/hard/auth/migration");
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load runs");
       setRuns(data.items ?? []);
@@ -57,7 +57,7 @@ export function MigrationDashboard({
   const startMigration = async () => {
     setRunning(true);
     try {
-      const res = await fetch("/api/admin/migration", {
+      const res = await fetch("/api/hard/auth/migration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dryRun, label: dryRun ? "Dry Run" : "Live Migration" }),
@@ -75,7 +75,7 @@ export function MigrationDashboard({
 
   const loadRunDetail = async (runId: string) => {
     try {
-      const res = await fetch(`/api/admin/migration/${runId}`);
+      const res = await fetch(`/api/hard/auth/migration/${runId}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load run");
       setSelectedRun(data.run);
@@ -90,7 +90,7 @@ export function MigrationDashboard({
       return;
     }
     try {
-      const res = await fetch(`/api/admin/migration/${runId}`, {
+      const res = await fetch(`/api/hard/auth/migration/${runId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "rollback" }),

@@ -32,7 +32,7 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
       if (type === "mark_completed") body.payoutReference = payoutReference;
       if (notes) body.internalNotes = notes;
 
-      const res = await fetch(`/api/admin/withdrawals/${withdrawal.id}`, {
+      const res = await fetch(`/api/hard/auth/withdrawals/${withdrawal.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -51,7 +51,7 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
                 ? "Marked as processing"
                 : "Information requested",
       );
-      router.push("/admin/withdrawals");
+      router.push("/hard/auth/withdrawals");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Action failed");
@@ -212,7 +212,7 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
         </div>
       </div>
 
-      <Link href="/admin/withdrawals" className={buttonVariants({ variant: "outline" })}>
+      <Link href="/hard/auth/withdrawals" className={buttonVariants({ variant: "outline" })}>
         Back to queue
       </Link>
     </div>

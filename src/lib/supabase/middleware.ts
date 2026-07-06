@@ -6,6 +6,10 @@ import {
   DASHBOARD_PREFIX,
 } from "@/lib/auth/constants";
 import {
+  getImpersonateProfileIdFromRequest,
+  isStaffSession,
+} from "@/lib/auth/impersonation";
+import {
   isAdminLoginRoute,
   isAdminRoute,
   isAuthApiRoute,
@@ -72,18 +76,33 @@ export function applyAuthRouting(
     return NextResponse.redirect(url);
   }
 
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace(/^\/admin/, "/hard/auth");
+    return NextResponse.redirect(url, 308);
+  }
+
   if (isAuthApiRoute(pathname) || isPublicAuthRoute(pathname)) {
     return baseResponse;
   }
 
   if (user) {
-    if (isGuestOnlyRoute(pathname) || isAdminLoginRoute(pathname)) {
+    const impersonating = Boolean(getImpersonateProfileIdFromRequest(request));
+
+    if (isDashboardRoute(pathname) && isStaffSession(request) && !impersonating) {
       const url = request.nextUrl.clone();
-      url.pathname = isAdminRoute(pathname) ? "/admin" : DASHBOARD_PREFIX;
+      url.pathname = "/hard/auth";
       return NextResponse.redirect(url);
     }
 
-    if (isDashboardRoute(pathname) && !user.emailConfirmed) {
+    if (isGuestOnlyRoute(pathname) || isAdminLoginRoute(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname =
+        isStaffSession(request) || isAdminRoute(pathname) ? "/hard/auth" : DASHBOARD_PREFIX;
+      return NextResponse.redirect(url);
+    }
+
+    if (isDashboardRoute(pathname) && !user.emailConfirmed && !impersonating) {
       if (pathname !== AUTH_ROUTES.verifyEmail && pathname !== AUTH_ROUTES.checkEmail) {
         const url = request.nextUrl.clone();
         url.pathname = AUTH_ROUTES.verifyEmail;

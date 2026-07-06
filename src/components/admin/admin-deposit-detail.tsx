@@ -27,7 +27,7 @@ export function AdminDepositDetail({ deposit }: { deposit: DepositView }) {
       if (type === "request_info") body.message = infoMessage;
       if (notes) body.internalNotes = notes;
 
-      const res = await fetch(`/api/admin/deposits/${deposit.id}`, {
+      const res = await fetch(`/api/hard/auth/deposits/${deposit.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -42,7 +42,7 @@ export function AdminDepositDetail({ deposit }: { deposit: DepositView }) {
             ? "Deposit rejected"
             : "Information requested",
       );
-      router.push("/admin/deposits");
+      router.push("/hard/auth/deposits");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Action failed");
@@ -158,7 +158,7 @@ export function AdminDepositDetail({ deposit }: { deposit: DepositView }) {
         )}
       </div>
 
-      <Link href="/admin/deposits" className={buttonVariants({ variant: "outline" })}>
+      <Link href="/hard/auth/deposits" className={buttonVariants({ variant: "outline" })}>
         Back to queue
       </Link>
     </div>

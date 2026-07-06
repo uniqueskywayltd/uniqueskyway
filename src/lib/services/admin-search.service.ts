@@ -115,7 +115,7 @@ export class AdminSearchService {
             id: u.id,
             title: u.fullName,
             subtitle: u.email,
-            href: `/admin/customers/${u.id}`,
+            href: `/hard/auth/customers/${u.id}`,
           })),
         });
       }
@@ -128,7 +128,7 @@ export class AdminSearchService {
             id: d.id,
             title: d.ref,
             subtitle: d.amount,
-            href: `/admin/deposits/${d.id}`,
+            href: `/hard/auth/deposits/${d.id}`,
           })),
         });
       }
@@ -141,7 +141,7 @@ export class AdminSearchService {
             id: w.id,
             title: w.wallet ?? w.id.slice(0, 8),
             subtitle: w.amount,
-            href: `/admin/withdrawals/${w.id}`,
+            href: `/hard/auth/withdrawals/${w.id}`,
           })),
         });
       }
@@ -154,7 +154,7 @@ export class AdminSearchService {
             id: i.id,
             title: i.id.slice(0, 8),
             subtitle: i.amount,
-            href: `/admin/investments/${i.id}`,
+            href: `/hard/auth/investments/${i.id}`,
           })),
         });
       }
@@ -167,7 +167,7 @@ export class AdminSearchService {
             id: l.id,
             title: l.description ?? l.id.slice(0, 8),
             subtitle: l.ref ?? "",
-            href: `/admin/ledger?entry=${l.id}`,
+            href: `/hard/auth/ledger?entry=${l.id}`,
           })),
         });
       }
@@ -180,7 +180,7 @@ export class AdminSearchService {
             id: a.id,
             title: `${a.entityType}`,
             subtitle: a.entityId ?? "",
-            href: `/admin/audit?id=${a.id}`,
+            href: `/hard/auth/audit?id=${a.id}`,
           })),
         });
       }
@@ -193,7 +193,7 @@ export class AdminSearchService {
             id: r.id,
             title: r.code,
             subtitle: "Referral relationship",
-            href: `/admin/referrals`,
+            href: `/hard/auth/referrals`,
           })),
         });
       }

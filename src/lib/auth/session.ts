@@ -48,6 +48,18 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   }
 }
 
+const profileSelect = {
+  id: profiles.id,
+  authUserId: profiles.authUserId,
+  email: profiles.email,
+  fullName: profiles.fullName,
+  username: profiles.username,
+  status: profiles.status,
+  emailVerified: profiles.emailVerified,
+  referralCode: profiles.referralCode,
+  avatarPath: profiles.avatarPath,
+};
+
 export async function getCustomerProfile(
   authUserId: string,
 ): Promise<CustomerProfile | null> {
@@ -55,19 +67,24 @@ export async function getCustomerProfile(
   if (!db) return null;
 
   const [profile] = await db
-    .select({
-      id: profiles.id,
-      authUserId: profiles.authUserId,
-      email: profiles.email,
-      fullName: profiles.fullName,
-      username: profiles.username,
-      status: profiles.status,
-      emailVerified: profiles.emailVerified,
-      referralCode: profiles.referralCode,
-      avatarPath: profiles.avatarPath,
-    })
+    .select(profileSelect)
     .from(profiles)
     .where(and(eq(profiles.authUserId, authUserId), isNull(profiles.deletedAt)))
+    .limit(1);
+
+  return profile ?? null;
+}
+
+export async function getCustomerProfileById(
+  profileId: string,
+): Promise<CustomerProfile | null> {
+  const db = getDbSafe();
+  if (!db) return null;
+
+  const [profile] = await db
+    .select(profileSelect)
+    .from(profiles)
+    .where(and(eq(profiles.id, profileId), isNull(profiles.deletedAt)))
     .limit(1);
 
   return profile ?? null;

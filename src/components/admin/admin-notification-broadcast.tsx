@@ -15,7 +15,7 @@ export function AdminNotificationBroadcast() {
   async function broadcast() {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/notifications", {
+      const res = await fetch("/api/hard/auth/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "broadcast_in_app", ...form }),

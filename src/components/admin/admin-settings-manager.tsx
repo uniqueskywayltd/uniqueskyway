@@ -31,7 +31,7 @@ export function AdminSettingsManager({ settings }: { settings: SettingRow[] }) {
         value = raw;
       }
 
-      const res = await fetch("/api/admin/settings", {
+      const res = await fetch("/api/hard/auth/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value }),

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getAdminProfile, getCustomerProfile, getSessionUser } from "@/lib/auth/session";
+import { getAdminProfile, getCustomerProfile, getCustomerProfileById, getSessionUser } from "@/lib/auth/session";
 import type { CustomerProfile } from "@/lib/auth/session";
+import { getImpersonateProfileId } from "@/lib/auth/impersonation";
 import { PERMISSIONS, type Permission } from "@/lib/permissions/constants";
 import { permissionService } from "@/lib/services/permissions.service";
 
@@ -8,6 +9,7 @@ export type AuthenticatedContext = {
   authUserId: string;
   email: string;
   profile: CustomerProfile;
+  impersonating?: boolean;
 };
 
 export async function requireCustomer(): Promise<
@@ -16,6 +18,37 @@ export async function requireCustomer(): Promise<
   const user = await getSessionUser();
   if (!user) {
     return { ok: false, response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+
+  const impersonateProfileId = await getImpersonateProfileId();
+  if (impersonateProfileId) {
+    const admin = await getAdminProfile(user.authUserId);
+    if (!admin) {
+      return { ok: false, response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    }
+
+    const perm = await permissionService.requirePermission(user.authUserId, PERMISSIONS.USERS_READ);
+    if (!perm.success) {
+      return {
+        ok: false,
+        response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+      };
+    }
+
+    const profile = await getCustomerProfileById(impersonateProfileId);
+    if (!profile) {
+      return { ok: false, response: NextResponse.json({ error: "Profile not found" }, { status: 404 }) };
+    }
+
+    return {
+      ok: true,
+      ctx: {
+        authUserId: user.authUserId,
+        email: user.email,
+        profile,
+        impersonating: true,
+      },
+    };
   }
 
   const profile = await getCustomerProfile(user.authUserId);

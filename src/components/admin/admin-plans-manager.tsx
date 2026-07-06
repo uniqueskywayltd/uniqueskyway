@@ -24,7 +24,7 @@ export function AdminPlansManager({ plans }: { plans: AdminPlanView[] }) {
   async function toggle(id: string, field: "isActive" | "isVisible", value: boolean) {
     setLoading(id);
     try {
-      const res = await fetch(`/api/admin/plans/${id}`, {
+      const res = await fetch(`/api/hard/auth/plans/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: value }),
@@ -42,7 +42,7 @@ export function AdminPlansManager({ plans }: { plans: AdminPlanView[] }) {
   async function duplicate(id: string) {
     setLoading(id);
     try {
-      const res = await fetch(`/api/admin/plans/${id}`, {
+      const res = await fetch(`/api/hard/auth/plans/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "duplicate" }),

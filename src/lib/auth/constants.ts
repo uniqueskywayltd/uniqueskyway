@@ -12,7 +12,7 @@ export const AUTH_ROUTES = {
 } as const;
 
 export const DASHBOARD_PREFIX = "/dashboard";
-export const ADMIN_PREFIX = "/admin";
+export const ADMIN_PREFIX = "/hard/auth";
 
 export const GUEST_ONLY_ROUTES = [
   AUTH_ROUTES.login,
@@ -36,7 +36,7 @@ export const PROTECTED_ADMIN_PREFIXES = [
   ADMIN_PREFIX,
 ] as const;
 
-export const ADMIN_LOGIN_ROUTE = "/admin/login";
+export const ADMIN_LOGIN_ROUTE = "/hard/auth/login";
 
 export const LOCKOUT_MAX_ATTEMPTS = 5;
 export const LOCKOUT_WINDOW_MS = 15 * 60 * 1000;

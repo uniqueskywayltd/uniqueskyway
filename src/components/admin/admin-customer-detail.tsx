@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +23,7 @@ export function AdminCustomerDetail({ customer }: { customer: CustomerDetail }) 
   async function action(type: string, extra: Record<string, string> = {}) {
     setLoading(type);
     try {
-      const res = await fetch(`/api/admin/customers/${customer.id}`, {
+      const res = await fetch(`/api/hard/auth/customers/${customer.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: type, reason, ...extra }),
@@ -42,16 +42,50 @@ export function AdminCustomerDetail({ customer }: { customer: CustomerDetail }) 
     }
   }
 
+  async function accessAccount() {
+    setLoading("impersonate");
+    try {
+      const res = await fetch("/api/hard/auth/impersonate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: customer.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Unable to access account");
+      router.push(data.redirectTo ?? "/dashboard");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Unable to access account");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{customer.fullName}</h1>
           <p className="text-slate-400">{customer.email} · @{customer.username}</p>
         </div>
-        <Badge variant="outline" className="capitalize">
-          {customer.loginDisabled ? "login disabled" : customer.status.replace("_", " ")}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            className="bg-amber-500 text-slate-950 hover:bg-amber-400"
+            disabled={!!loading || customer.loginDisabled}
+            onClick={accessAccount}
+          >
+            {loading === "impersonate" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <UserRound className="mr-2 h-4 w-4" />
+            )}
+            Access account
+          </Button>
+          <Badge variant="outline" className="capitalize">
+            {customer.loginDisabled ? "login disabled" : customer.status.replace("_", " ")}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -143,7 +177,7 @@ export function AdminCustomerDetail({ customer }: { customer: CustomerDetail }) 
             <ul className="space-y-1 text-sm">
               {customer.referrals.map((r) => (
                 <li key={r.profileId}>
-                  <Link href={`/admin/customers/${r.profileId}`} className="text-blue-400 hover:underline">
+                  <Link href={`/hard/auth/customers/${r.profileId}`} className="text-blue-400 hover:underline">
                     {r.fullName}
                   </Link>
                   <span className="text-slate-500"> · {new Date(r.createdAt).toLocaleDateString()}</span>
@@ -196,7 +230,7 @@ export function AdminCustomerDetail({ customer }: { customer: CustomerDetail }) 
         </div>
       </div>
 
-      <Link href="/admin/customers" className={buttonVariants({ variant: "outline" })}>
+      <Link href="/hard/auth/customers" className={buttonVariants({ variant: "outline" })}>
         Back to customers
       </Link>
     </div>

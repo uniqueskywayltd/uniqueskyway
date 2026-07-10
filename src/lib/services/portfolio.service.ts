@@ -38,6 +38,10 @@ export type InvestmentDetail = InvestmentPosition & {
   dailyRoiPercent: string;
   maxRoiPercent: string | null;
   durationDays: number;
+  lockPeriodDays: number;
+  compounding: boolean;
+  isPaused: boolean;
+  lastAccrualAt: Date | null;
   expectedRoi: string;
   remainingDays: number | null;
   depositRequestId: string | null;
@@ -45,6 +49,7 @@ export type InvestmentDetail = InvestmentPosition & {
   ledgerEntryCount: number;
   roiPreview: RoiPreview;
   timeline: InvestmentEventView[];
+  currency: string;
 };
 
 export class PortfolioService {
@@ -220,6 +225,10 @@ export class PortfolioService {
         dailyRoiPercent: row.dailyRoiPercent,
         maxRoiPercent: row.maxRoiPercent,
         durationDays: row.durationDays,
+        lockPeriodDays: row.plan.lockPeriodDays,
+        compounding: row.plan.compounding,
+        isPaused: row.investment.isPaused,
+        lastAccrualAt: row.investment.lastAccrualAt,
         expectedRoi,
         remainingDays,
         depositRequestId: row.investment.depositRequestId,
@@ -227,6 +236,7 @@ export class PortfolioService {
         ledgerEntryCount: ledgerCount?.count ?? 0,
         roiPreview,
         timeline,
+        currency: row.plan.currency ?? "USD",
       });
     } catch (error) {
       return fail("INVESTMENT_DETAIL_ERROR", "Failed to load investment", error);

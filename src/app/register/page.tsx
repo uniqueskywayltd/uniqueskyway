@@ -21,7 +21,7 @@ export default function RegisterPage() {
       ]}
       footer={
         <>
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login" className={authLinkClass}>Sign in</Link>
           </p>

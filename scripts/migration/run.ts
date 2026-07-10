@@ -81,6 +81,11 @@ async function onlineMigration() {
 }
 
 async function main() {
+  if (args.includes("--live") && !process.env.DATABASE_URL) {
+    console.error("DATABASE_URL is required for live migration. Set it in .env.local or run from Admin → Migration on production.");
+    process.exit(1);
+  }
+
   if (phase === "offline" || !process.env.DATABASE_URL) {
     await offlinePhases();
     return;

@@ -1,0 +1,13 @@
+---
+# cPanel Git deployment — Namecheap shared hosting
+# Used when you connect this repo via cPanel → Git Version Control.
+#
+# IMPORTANT: .next is gitignored. Git pull updates SOURCE only.
+# After every git deploy you must upload the build from your computer:
+#   npm run build:cpanel && npm run deploy:cpanel
+#
+# This file only installs production dependencies (no build on server).
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/altosujd/repositories/alto-app
+    - cd $DEPLOYPATH && npm install --omit=dev --no-audit --no-fund 2>/dev/null || true

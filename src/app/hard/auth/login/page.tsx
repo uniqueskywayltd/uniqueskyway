@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { AuthField, AuthInputIcon, authLinkClass, authSubmitClass } from "@/components/auth/auth-field";
@@ -11,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,20 +24,24 @@ export default function AdminLoginPage() {
       const res = await fetch("/api/hard/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           email: form.get("email"),
           password: form.get("password"),
         }),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json")
+        ? await res.json()
+        : { error: res.ok ? undefined : "Unable to sign in" };
+
       if (!res.ok) {
         setError(data.error ?? "Invalid credentials");
         return;
       }
 
-      router.push("/hard/auth");
-      router.refresh();
+      window.location.assign(data.redirectTo ?? "/hard/auth");
     } catch {
       setError("Unable to sign in");
     } finally {
@@ -56,7 +58,7 @@ export default function AdminLoginPage() {
       panelImage="/brand/corporate.jpg"
       panelImageAlt="Admin portal"
       footer={
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-muted-foreground">
           <Link href="/" className={authLinkClass}>Back to website</Link>
         </p>
       }

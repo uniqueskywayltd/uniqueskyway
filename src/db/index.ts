@@ -22,7 +22,13 @@ export function getDb(): Database {
   }
 
   if (!database) {
-    client = postgres(connectionString, { prepare: false });
+    client = postgres(connectionString, {
+      prepare: false,
+      ssl: "require",
+      connect_timeout: 15,
+      idle_timeout: 20,
+      max_lifetime: 60 * 30,
+    });
     database = drizzle(client, { schema });
   }
 

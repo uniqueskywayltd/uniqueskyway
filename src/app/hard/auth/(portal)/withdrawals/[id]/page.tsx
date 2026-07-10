@@ -17,7 +17,7 @@ export default async function AdminWithdrawalDetailPage({
   const result = await withdrawalService.getReviewContext(id);
 
   if (!result.success) {
-    return <div className="text-slate-400">Withdrawal not found or unavailable.</div>;
+    return <div className="text-muted-foreground">Withdrawal not found or unavailable.</div>;
   }
 
   return <AdminWithdrawalDetail withdrawal={result.data} />;

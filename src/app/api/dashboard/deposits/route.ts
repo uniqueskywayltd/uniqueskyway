@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     profileId: auth.ctx.profile.id,
     planId: body.planId,
     paymentMethodSlug: body.paymentMethodSlug,
+    platformWalletId: body.platformWalletId,
     amount: body.amount,
     externalTransactionRef: body.externalTransactionRef,
     currency: body.currency,

@@ -65,60 +65,60 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Withdrawal review</h1>
-          <p className="text-slate-400">{withdrawal.customerEmail}</p>
+          <p className="text-muted-foreground">{withdrawal.customerEmail}</p>
         </div>
         <Badge className="capitalize">{withdrawal.status.replace("_", " ")}</Badge>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-3 text-sm">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-3 text-sm">
             <h2 className="font-semibold">Request details</h2>
             <div className="flex justify-between">
-              <span className="text-slate-400">Customer</span>
+              <span className="text-muted-foreground">Customer</span>
               <span>{withdrawal.customerName}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Amount</span>
+              <span className="text-muted-foreground">Amount</span>
               <span className="font-semibold">{formatMoney(withdrawal.amount, withdrawal.currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Method</span>
+              <span className="text-muted-foreground">Method</span>
               <span className="capitalize">{withdrawal.methodSlug.replace(/_/g, " ")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Destination</span>
+              <span className="text-muted-foreground">Destination</span>
               <span className="max-w-[200px] truncate font-mono text-xs">{withdrawal.walletAddress}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Network</span>
+              <span className="text-muted-foreground">Network</span>
               <span>{withdrawal.network}</span>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-3 text-sm">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-3 text-sm">
             <h2 className="font-semibold">Balance impact</h2>
             <div className="flex justify-between">
-              <span className="text-slate-400">Available</span>
+              <span className="text-muted-foreground">Available</span>
               <span>{formatMoney(withdrawal.availableBalance, withdrawal.currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Reserved</span>
+              <span className="text-muted-foreground">Reserved</span>
               <span>{formatMoney(withdrawal.reservedBalance, withdrawal.currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Withdrawable</span>
+              <span className="text-muted-foreground">Withdrawable</span>
               <span>{formatMoney(withdrawal.withdrawableBalance, withdrawal.currency)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400">Locked investments</span>
+              <span className="text-muted-foreground">Locked investments</span>
               <span>{formatMoney(withdrawal.lockedInvestments, withdrawal.currency)}</span>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-3 text-sm">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-3 text-sm">
             <h2 className="font-semibold">Investment summary</h2>
             <p>{withdrawal.investmentSummary.activeCount} active investments</p>
             <p>Total principal: {formatMoney(withdrawal.investmentSummary.totalPrincipal, withdrawal.currency)}</p>
@@ -139,24 +139,24 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
             </div>
           ) : null}
 
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-slate-300">Internal notes</Label>
+              <Label className="text-foreground/80">Internal notes</Label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="bg-slate-950 border-slate-700"
+                className="bg-background border-input"
               />
             </div>
 
             {["submitted", "under_review"].includes(withdrawal.status) ? (
               <>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Request info message</Label>
+                  <Label className="text-foreground/80">Request info message</Label>
                   <Textarea
                     value={infoMessage}
                     onChange={(e) => setInfoMessage(e.target.value)}
-                    className="bg-slate-950 border-slate-700"
+                    className="bg-background border-input"
                   />
                 </div>
                 <Button
@@ -170,11 +170,11 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
                   {loading === "approve" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Approve & reserve funds"}
                 </Button>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Rejection reason</Label>
+                  <Label className="text-foreground/80">Rejection reason</Label>
                   <Textarea
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}
-                    className="bg-slate-950 border-slate-700"
+                    className="bg-background border-input"
                   />
                 </div>
                 <Button
@@ -196,11 +196,11 @@ export function AdminWithdrawalDetail({ withdrawal }: { withdrawal: WithdrawalRe
             {["approved", "processing"].includes(withdrawal.status) ? (
               <>
                 <div className="space-y-2">
-                  <Label className="text-slate-300">Payout reference (tx hash / wire ref)</Label>
+                  <Label className="text-foreground/80">Payout reference (tx hash / wire ref)</Label>
                   <Input
                     value={payoutReference}
                     onChange={(e) => setPayoutReference(e.target.value)}
-                    className="bg-slate-950 border-slate-700"
+                    className="bg-background border-input"
                   />
                 </div>
                 <Button disabled={!!loading} onClick={() => action("mark_completed")}>

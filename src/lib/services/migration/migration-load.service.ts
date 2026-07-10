@@ -21,6 +21,7 @@ import { MIGRATION_BATCH_SIZE } from "@/lib/migration/constants";
 import { migrationIdempotencyKey } from "@/lib/migration/transform-rules";
 import type { MigrationTransformResult } from "@/lib/migration/types";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveAuthPasswordFromLegacy } from "@/lib/services/legacy-password-sync.service";
 import { migrationImageService } from "./migration-image.service";
 
 type LoadOptions = {
@@ -110,17 +111,21 @@ export class MigrationLoadService {
           continue;
         }
 
+        const legacyAuth = resolveAuthPasswordFromLegacy(user.legacyPassword);
         const tempPassword = randomBytes(24).toString("base64url");
+        const authPassword = legacyAuth.fromLegacy ? legacyAuth.password : tempPassword;
+
         const { data: authData, error } = await admin.auth.admin.createUser({
           email: user.email,
-          password: tempPassword,
+          password: authPassword,
           email_confirm: true,
           user_metadata: {
             full_name: user.fullName,
             username: user.username,
             legacy_user_id: user.legacyUserId,
-            password_reset_required: true,
+            password_reset_required: user.passwordResetRequired,
             migrated: true,
+            legacy_password_from_dump: legacyAuth.fromLegacy,
           },
         });
 
@@ -308,11 +313,20 @@ export class MigrationLoadService {
 
     for (let i = 0; i < data.ledgerEntries.length; i += batchSize) {
       const batch = data.ledgerEntries.slice(i, i + batchSize);
+      const keys = batch.map((entry) => entry.idempotencyKey);
+      const existingRows = keys.length
+        ? await db
+            .select({ idempotencyKey: migrationIdempotency.idempotencyKey })
+            .from(migrationIdempotency)
+            .where(inArray(migrationIdempotency.idempotencyKey, keys))
+        : [];
+      const existingKeys = new Set(existingRows.map((row) => row.idempotencyKey));
+
       for (const entry of batch) {
         const profileId = profileMap.get(entry.email);
         if (!profileId) continue;
 
-        if (await this.getIdempotency(entry.idempotencyKey)) continue;
+        if (existingKeys.has(entry.idempotencyKey)) continue;
 
         const [account] = await db
           .select({ id: ledgerAccounts.id })

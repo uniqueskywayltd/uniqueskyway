@@ -62,9 +62,9 @@ export function AdminLedgerExplorer({
 
   return (
     <div className="space-y-8">
-      <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <h2 className="font-semibold text-amber-400">Manual ledger correction (restricted)</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Requires reason and creates immutable audit trail. Use only for verified corrections.
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -127,27 +127,27 @@ export function AdminLedgerExplorer({
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <Table>
           <TableHeader>
-            <TableRow className="border-slate-800 hover:bg-transparent">
-              <TableHead className="text-slate-400">Date</TableHead>
-              <TableHead className="text-slate-400">Customer</TableHead>
-              <TableHead className="text-slate-400">Type</TableHead>
-              <TableHead className="text-slate-400">Amount</TableHead>
-              <TableHead className="text-slate-400">Description</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Date</TableHead>
+              <TableHead className="text-muted-foreground">Customer</TableHead>
+              <TableHead className="text-muted-foreground">Type</TableHead>
+              <TableHead className="text-muted-foreground">Amount</TableHead>
+              <TableHead className="text-muted-foreground">Description</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {initialEntries.map((e) => (
-              <TableRow key={e.id} className="border-slate-800">
+              <TableRow key={e.id} className="border-border">
                 <TableCell className="text-sm">{new Date(e.createdAt).toLocaleString()}</TableCell>
                 <TableCell>{e.customerName}</TableCell>
                 <TableCell className="capitalize text-xs">{e.entryType.replace(/_/g, " ")}</TableCell>
                 <TableCell className={e.direction === "credit" ? "text-emerald-400" : "text-red-400"}>
                   {e.direction === "credit" ? "+" : "-"}{formatMoney(e.amount)}
                 </TableCell>
-                <TableCell className="text-slate-400 text-sm max-w-[200px] truncate">
+                <TableCell className="text-muted-foreground text-sm max-w-[200px] truncate">
                   {e.description ?? e.idempotencyKey}
                 </TableCell>
               </TableRow>

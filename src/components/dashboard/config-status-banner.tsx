@@ -1,11 +1,13 @@
 import { AlertTriangle } from "lucide-react";
 import { getIntegrationStatus } from "@/lib/infrastructure";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { isResendApiKeyPresent } from "@/lib/config";
 
 export function ConfigStatusBanner() {
   const status = getIntegrationStatus();
+  const resendPresent = isResendApiKeyPresent();
 
-  if (status.ready && status.storage && status.email) {
+  if (status.ready && status.storage && (status.email || resendPresent)) {
     return null;
   }
 

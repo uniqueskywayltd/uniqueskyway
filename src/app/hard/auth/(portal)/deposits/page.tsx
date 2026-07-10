@@ -44,39 +44,47 @@ export default async function AdminDepositsPage() {
         <ServiceErrorState code={result.error.code} message={result.error.message} />
       ) : result.data.items.length === 0 ? (
         <EmptyState
-          theme="dark"
           title="No deposits in queue"
           description="Pending deposit requests will appear here for review."
         />
       ) : (
-        <DataTable theme="dark">
+        <DataTable>
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-800 hover:bg-transparent">
-                <TableHead className="text-slate-400">Customer</TableHead>
-                <TableHead className="text-slate-400">Amount</TableHead>
-                <TableHead className="text-slate-400">Plan</TableHead>
-                <TableHead className="text-slate-400">Reference</TableHead>
-                <TableHead className="text-slate-400">Status</TableHead>
-                <TableHead className="text-slate-400">Submitted</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground">Customer</TableHead>
+                <TableHead className="text-muted-foreground">Plan</TableHead>
+                <TableHead className="text-muted-foreground">Amount</TableHead>
+                <TableHead className="text-muted-foreground">Asset</TableHead>
+                <TableHead className="text-muted-foreground">Network</TableHead>
+                <TableHead className="text-muted-foreground">TXID</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Submitted</TableHead>
                 <TableHead className="sr-only">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {result.data.items.map((d) => (
-                <TableRow key={d.id} className="border-slate-800">
-                  <TableCell className="text-slate-200">{d.customerName}</TableCell>
-                  <TableCell className="font-medium tabular-nums text-white">
+                <TableRow key={d.id} className="border-border">
+                  <TableCell className="text-foreground">{d.customerName}</TableCell>
+                  <TableCell className="text-foreground">{d.planName ?? "—"}</TableCell>
+                  <TableCell className="font-medium tabular-nums text-foreground">
                     {formatMoney(d.amount, d.currency)}
                   </TableCell>
-                  <TableCell className="text-slate-200">{d.planName ?? "—"}</TableCell>
-                  <TableCell className="font-mono text-xs text-slate-300">
+                  <TableCell className="text-foreground">
+                    {d.assetSymbolSnapshot ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-foreground">{d.networkSnapshot ?? "—"}</TableCell>
+                  <TableCell className="font-mono text-xs text-foreground/80 max-w-[120px] truncate">
                     {d.externalTransactionRef}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge theme="dark" status={d.status} />
+                    <StatusBadge
+                      status={d.status}
+                      label={d.status === "submitted" ? "Awaiting Verification" : undefined}
+                    />
                   </TableCell>
-                  <TableCell className="text-sm text-slate-400">
+                  <TableCell className="text-sm text-muted-foreground">
                     {d.submittedAt ? new Date(d.submittedAt).toLocaleDateString() : "—"}
                   </TableCell>
                   <TableCell>

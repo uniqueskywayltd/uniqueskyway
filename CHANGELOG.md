@@ -2,6 +2,43 @@
 
 All notable changes to the `platform/` application are documented here.
 
+## [Unreleased] — Platform Wallets (Phase 1)
+
+### Added
+
+- **Platform Wallets** — admin-configurable company-owned deposit wallets (`platform_wallets` table, migration `0019_platform_wallets.sql`)
+- **PlatformWalletService** — CRUD, soft delete, duplicate, reorder, mark primary (one per asset/network), QR validation
+- **Deposit wallet snapshots** — `deposit_requests` stores wallet ID, address, asset, network, QR path, and instructions at submission time
+- **4-step customer deposit flow** — plan → wallet selection → deposit details (QR, copy address) → confirmation (amount, TXID, screenshot)
+- **Admin → Platform Wallets** — full management UI with QR upload (`wallet-qr` storage bucket)
+- **Feature flag** — `platform_wallets_enabled` (customers blocked when off; admins can still manage wallets)
+- **Permissions** — `platform_wallets.read`, `platform_wallets.manage` for super_admin, administrator, finance_manager
+- **APIs** — `GET /api/platform-wallets`, `GET|POST /api/hard/auth/platform-wallets`, QR upload route
+
+### Changed
+
+- **Deposit submission** — uses `platformWalletId`; status `submitted` displayed as “Awaiting Verification”; no ledger/investment until admin approves
+- **Admin deposit queue** — shows asset, network, TXID, wallet snapshot; “Approve Deposit” wording (not balance update language)
+- **Legacy payment methods** — deposit service still supports `paymentMethodSlug` for backward compatibility
+
+## [Unreleased] — Homepage Trust Components
+
+### Added
+
+- **Live Activity Ticker** — floating homepage social-proof card with registration, deposit, withdrawal, and investment events; privacy-masked names; admin-managed feed with seed data fallback
+- **Market Overview strip** — full-width ticker below header with institutional asset quotes (BTC, ETH, commodities, indices, FX)
+- **ActivityFeedService** — merges real platform activity with seeded/manual items; configurable display timing and seed retirement threshold
+- **MarketDataService** — provider abstraction (`mock` / `cached` / `live`) with 5-minute server cache
+- **Admin → Activity Feed** — CRUD, pin, hide, seed toggle, display duration, animation speed
+- **Admin → Market Settings** — asset selection, provider, refresh/cache intervals
+- **Feature flags** — `activity_feed_enabled`, `seed_activity_enabled`, `market_ticker_enabled`
+- **Database** — `activity_feed` table + migration `0018_trust_components.sql`; ~100 seeded USA activity records
+
+### Changed
+
+- **Marketing layout** — optional `belowHeader` and `floatingWidgets` slots for homepage trust UI
+- **Homepage** — lazy-loaded market strip and activity ticker (non-blocking, reduced-motion aware)
+
 ## [1.0.0] — Final Milestone (July 2026)
 
 ### Added

@@ -18,6 +18,9 @@ import {
   profiles,
 } from "@/db/schema";
 import type { DepositStatus } from "@/types/domain";
+import type { InvestmentPlanView } from "./investment-plan.service";
+import type { PaymentMethodView } from "./payment-method.service";
+import type { PlatformWalletView } from "./platform-wallet.service";
 import { FEATURE_FLAGS } from "@/lib/constants/feature-flags";
 import { SYSTEM_SETTINGS } from "@/lib/constants/system-settings";
 import { auditService } from "./audit.service";
@@ -28,6 +31,7 @@ import { investmentPlanService } from "./investment-plan.service";
 import { ledgerService } from "./ledger.service";
 import { notificationService } from "./notification.service";
 import { paymentMethodService } from "./payment-method.service";
+import { platformWalletService } from "./platform-wallet.service";
 import { settingsService } from "./settings.service";
 import { fail, ok } from "./base";
 import type { ActorContext, PaginatedResult, ServiceResult } from "./types";
@@ -50,6 +54,13 @@ export type DepositView = {
   infoRequestMessage: string | null;
   investmentId: string | null;
   rejectionReason: string | null;
+  platformWalletId: string | null;
+  walletAddressSnapshot: string | null;
+  assetSymbolSnapshot: string | null;
+  assetNameSnapshot: string | null;
+  networkSnapshot: string | null;
+  qrCodePathSnapshot: string | null;
+  walletInstructionsSnapshot: string | null;
   submittedAt: Date | null;
   reviewedAt: Date | null;
   approvedAt: Date | null;
@@ -62,7 +73,8 @@ export type DepositView = {
 export type SubmitDepositInput = {
   profileId: string;
   planId: string;
-  paymentMethodSlug: string;
+  paymentMethodSlug?: string;
+  platformWalletId?: string;
   amount: string;
   externalTransactionRef: string;
   currency?: string;
@@ -84,59 +96,124 @@ function parseAmount(value: string | number | null | undefined): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
+type DepositRow = typeof depositRequests.$inferSelect;
+
+function mapDepositRow(
+  deposit: DepositRow,
+  extras: {
+    planName?: string | null;
+    customerName?: string | null;
+    customerEmail?: string | null;
+    paymentMethodName?: string | null;
+  } = {},
+): DepositView {
+  return {
+    id: deposit.id,
+    profileId: deposit.profileId,
+    planId: deposit.planId,
+    planName: extras.planName ?? null,
+    paymentMethodId: deposit.paymentMethodId,
+    paymentMethodSlug: deposit.paymentMethod,
+    paymentMethodName: extras.paymentMethodName ?? null,
+    amount: deposit.amount,
+    currency: deposit.currency,
+    externalTransactionRef: deposit.externalTransactionRef,
+    status: deposit.status as DepositStatus,
+    proofStoragePath: deposit.proofStoragePath,
+    infoRequestMessage: deposit.infoRequestMessage,
+    investmentId: deposit.investmentId,
+    rejectionReason: deposit.rejectionReason,
+    platformWalletId: deposit.platformWalletId,
+    walletAddressSnapshot: deposit.walletAddressSnapshot,
+    assetSymbolSnapshot: deposit.assetSymbolSnapshot,
+    assetNameSnapshot: deposit.assetNameSnapshot,
+    networkSnapshot: deposit.networkSnapshot,
+    qrCodePathSnapshot: deposit.qrCodePathSnapshot,
+    walletInstructionsSnapshot: deposit.walletInstructionsSnapshot,
+    submittedAt: deposit.submittedAt,
+    reviewedAt: deposit.reviewedAt,
+    approvedAt: deposit.approvedAt,
+    createdAt: deposit.createdAt,
+    customerName: extras.customerName ?? undefined,
+    customerEmail: extras.customerEmail ?? undefined,
+    internalNotes: deposit.internalNotes,
+  };
+}
+
+async function validatePlanAmount(
+  planId: string,
+  amount: number,
+  minOverride?: number | null,
+  maxOverride?: number | null,
+): Promise<ServiceResult<{ plan: InvestmentPlanView }>> {
+  const planResult = await investmentPlanService.getById(planId);
+  if (!planResult.success) return planResult;
+  if (!planResult.data) {
+    return fail("PLAN_NOT_FOUND", "Investment plan not found or inactive");
+  }
+
+  const plan = planResult.data;
+  const minPlan = parseAmount(plan.minDeposit) ?? 0;
+  const maxPlan = parseAmount(plan.maxDeposit);
+  const minSystem = parseAmount(await settingsService.get(SYSTEM_SETTINGS.MINIMUM_DEPOSIT));
+  const maxSystem = parseAmount(await settingsService.get(SYSTEM_SETTINGS.MAXIMUM_DEPOSIT));
+
+  const minAmount = Math.max(minPlan, minSystem ?? 0, minOverride ?? 0);
+  let maxAmount = maxPlan ?? maxSystem ?? maxOverride ?? null;
+  if (maxPlan && maxSystem) maxAmount = Math.min(maxPlan, maxSystem);
+  if (maxAmount && maxOverride) maxAmount = Math.min(maxAmount, maxOverride);
+
+  if (amount < minAmount) {
+    return fail("AMOUNT_TOO_LOW", `Minimum deposit is ${minAmount.toFixed(2)}`);
+  }
+  if (maxAmount !== null && amount > maxAmount) {
+    return fail("AMOUNT_TOO_HIGH", `Maximum deposit is ${maxAmount.toFixed(2)}`);
+  }
+
+  return ok({ plan });
+}
+
 export class DepositService {
   private async validateSubmission(
     input: SubmitDepositInput,
-  ): Promise<ServiceResult<{ plan: Awaited<ReturnType<typeof investmentPlanService.getById>> extends ServiceResult<infer T> ? T : never; method: Awaited<ReturnType<typeof paymentMethodService.getBySlug>> extends ServiceResult<infer M> ? M : never }>> {
+  ): Promise<
+    ServiceResult<{
+      plan: InvestmentPlanView;
+      method?: PaymentMethodView;
+      wallet?: PlatformWalletView;
+    }>
+  > {
     const maintenance = await featureFlagService.isMaintenanceMode();
     if (maintenance) {
       return fail("MAINTENANCE_MODE", "Platform is in maintenance mode");
     }
 
-    const depositsEnabled = await featureFlagService.requireEnabled(
-      FEATURE_FLAGS.DEPOSITS_ENABLED,
-    );
-    if (!depositsEnabled.success) return depositsEnabled;
+    const [depositsEnabled, investmentsEnabled, activeWallets, activePlans] =
+      await Promise.all([
+        featureFlagService.isEnabled(FEATURE_FLAGS.DEPOSITS_ENABLED),
+        featureFlagService.isEnabled(FEATURE_FLAGS.INVESTMENTS_ENABLED),
+        platformWalletService.listActiveForCustomers(),
+        investmentPlanService.listActive(),
+      ]);
 
-    const investmentsEnabled = await featureFlagService.requireEnabled(
-      FEATURE_FLAGS.INVESTMENTS_ENABLED,
-    );
-    if (!investmentsEnabled.success) return investmentsEnabled;
+    const hasWallets = activeWallets.success && activeWallets.data.length > 0;
+    const hasPlans = activePlans.success && activePlans.data.length > 0;
+
+    if (!depositsEnabled && !hasWallets) {
+      return fail("FEATURE_DISABLED", "Deposits are not open yet");
+    }
+
+    if (!investmentsEnabled && !hasPlans) {
+      return fail("FEATURE_DISABLED", "New investments are not available yet");
+    }
+
+    if (!input.platformWalletId && !input.paymentMethodSlug) {
+      return fail("PAYMENT_REQUIRED", "A payment method or platform wallet is required");
+    }
 
     const amount = parseAmount(input.amount);
     if (!amount || amount <= 0) {
       return fail("INVALID_AMOUNT", "Amount must be greater than zero");
-    }
-
-    const planResult = await investmentPlanService.getById(input.planId);
-    if (!planResult.success) return planResult;
-    if (!planResult.data) {
-      return fail("PLAN_NOT_FOUND", "Investment plan not found or inactive");
-    }
-
-    const methodResult = await paymentMethodService.getBySlug(input.paymentMethodSlug);
-    if (!methodResult.success) return methodResult;
-
-    const plan = planResult.data;
-    const method = methodResult.data;
-
-    const minPlan = parseAmount(plan.minDeposit) ?? 0;
-    const maxPlan = parseAmount(plan.maxDeposit);
-    const minSystem = parseAmount(await settingsService.get(SYSTEM_SETTINGS.MINIMUM_DEPOSIT));
-    const maxSystem = parseAmount(await settingsService.get(SYSTEM_SETTINGS.MAXIMUM_DEPOSIT));
-    const minMethod = parseAmount(method.minAmount);
-    const maxMethod = parseAmount(method.maxAmount);
-
-    const minAmount = Math.max(minPlan, minSystem ?? 0, minMethod ?? 0);
-    let maxAmount = maxPlan ?? maxSystem ?? maxMethod ?? null;
-    if (maxPlan && maxSystem) maxAmount = Math.min(maxPlan, maxSystem);
-    if (maxAmount && maxMethod) maxAmount = Math.min(maxAmount, maxMethod);
-
-    if (amount < minAmount) {
-      return fail("AMOUNT_TOO_LOW", `Minimum deposit is ${minAmount.toFixed(2)}`);
-    }
-    if (maxAmount !== null && amount > maxAmount) {
-      return fail("AMOUNT_TOO_HIGH", `Maximum deposit is ${maxAmount.toFixed(2)}`);
     }
 
     if (!input.externalTransactionRef.trim()) {
@@ -170,7 +247,25 @@ export class DepositService {
       return fail("DUPLICATE_REFERENCE", "This transaction reference is already in use");
     }
 
-    return ok({ plan, method });
+    if (input.platformWalletId) {
+      const walletResult = await platformWalletService.getActiveById(input.platformWalletId);
+      if (!walletResult.success) return walletResult;
+
+      const planResult = await validatePlanAmount(input.planId, amount);
+      if (!planResult.success) return planResult;
+
+      return ok({ plan: planResult.data.plan, wallet: walletResult.data });
+    }
+
+    const methodResult = await paymentMethodService.getBySlug(input.paymentMethodSlug!);
+    if (!methodResult.success) return methodResult;
+
+    const minMethod = parseAmount(methodResult.data.minAmount);
+    const maxMethod = parseAmount(methodResult.data.maxAmount);
+    const planResult = await validatePlanAmount(input.planId, amount, minMethod, maxMethod);
+    if (!planResult.success) return planResult;
+
+    return ok({ plan: planResult.data.plan, method: methodResult.data });
   }
 
   async submitDeposit(input: SubmitDepositInput): Promise<ServiceResult<{ id: string }>> {
@@ -180,17 +275,28 @@ export class DepositService {
     const validation = await this.validateSubmission(input);
     if (!validation.success) return validation;
 
-    const { method } = validation.data;
+    const { method, wallet } = validation.data;
 
     try {
       const db = getDb();
+      const paymentMethodSlug = wallet
+        ? `platform:${wallet.assetSymbol}:${wallet.network}`
+        : method!.slug;
+
       const [deposit] = await db
         .insert(depositRequests)
         .values({
           profileId: input.profileId,
           planId: input.planId,
-          paymentMethodId: method.id,
-          paymentMethod: method.slug,
+          paymentMethodId: method?.id ?? null,
+          paymentMethod: paymentMethodSlug,
+          platformWalletId: wallet?.id ?? null,
+          walletAddressSnapshot: wallet?.walletAddress ?? null,
+          assetSymbolSnapshot: wallet?.assetSymbol ?? null,
+          assetNameSnapshot: wallet?.assetName ?? null,
+          networkSnapshot: wallet?.network ?? null,
+          qrCodePathSnapshot: wallet?.qrCodePath ?? null,
+          walletInstructionsSnapshot: wallet?.instructions ?? null,
           amount: input.amount,
           currency: input.currency ?? "USD",
           externalTransactionRef: input.externalTransactionRef.trim(),
@@ -209,7 +315,8 @@ export class DepositService {
         metadata: {
           amount: input.amount,
           planId: input.planId,
-          paymentMethod: method.slug,
+          paymentMethod: paymentMethodSlug,
+          platformWalletId: wallet?.id,
         },
       });
 
@@ -218,7 +325,7 @@ export class DepositService {
         channel: "in_app",
         eventType: "deposit.submitted",
         title: "Deposit submitted",
-        body: `Your deposit of ${input.amount} ${input.currency ?? "USD"} is under review.`,
+        body: `Your deposit of ${input.amount} ${input.currency ?? "USD"} is awaiting verification.`,
         payload: { depositId: deposit.id },
       });
 
@@ -282,27 +389,9 @@ export class DepositService {
         .limit(pageSize)
         .offset(offset);
 
-      const items: DepositView[] = rows.map((r) => ({
-        id: r.deposit.id,
-        profileId: r.deposit.profileId,
-        planId: r.deposit.planId,
-        planName: r.planName,
-        paymentMethodId: r.deposit.paymentMethodId,
-        paymentMethodSlug: r.deposit.paymentMethod,
-        paymentMethodName: null,
-        amount: r.deposit.amount,
-        currency: r.deposit.currency,
-        externalTransactionRef: r.deposit.externalTransactionRef,
-        status: r.deposit.status as DepositStatus,
-        proofStoragePath: r.deposit.proofStoragePath,
-        infoRequestMessage: r.deposit.infoRequestMessage,
-        investmentId: r.deposit.investmentId,
-        rejectionReason: r.deposit.rejectionReason,
-        submittedAt: r.deposit.submittedAt,
-        reviewedAt: r.deposit.reviewedAt,
-        approvedAt: r.deposit.approvedAt,
-        createdAt: r.deposit.createdAt,
-      }));
+      const items: DepositView[] = rows.map((r) =>
+        mapDepositRow(r.deposit, { planName: r.planName }),
+      );
 
       const total = totalRow?.count ?? 0;
       return ok({ items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) });
@@ -332,27 +421,11 @@ export class DepositService {
 
       if (!row) return fail("DEPOSIT_NOT_FOUND", "Deposit not found");
 
-      return ok({
-        id: row.deposit.id,
-        profileId: row.deposit.profileId,
-        planId: row.deposit.planId,
-        planName: row.planName,
-        paymentMethodId: row.deposit.paymentMethodId,
-        paymentMethodSlug: row.deposit.paymentMethod,
-        paymentMethodName: null,
-        amount: row.deposit.amount,
-        currency: row.deposit.currency,
-        externalTransactionRef: row.deposit.externalTransactionRef,
-        status: row.deposit.status as DepositStatus,
-        proofStoragePath: row.deposit.proofStoragePath,
-        infoRequestMessage: row.deposit.infoRequestMessage,
-        investmentId: row.deposit.investmentId,
-        rejectionReason: row.deposit.rejectionReason,
-        submittedAt: row.deposit.submittedAt,
-        reviewedAt: row.deposit.reviewedAt,
-        approvedAt: row.deposit.approvedAt,
-        createdAt: row.deposit.createdAt,
-      });
+      return ok(
+        mapDepositRow(row.deposit, {
+          planName: row.planName,
+        }),
+      );
     } catch (error) {
       return fail("DEPOSIT_GET_ERROR", "Failed to load deposit", error);
     }
@@ -412,30 +485,13 @@ export class DepositService {
         .limit(pageSize)
         .offset(offset);
 
-      const items: DepositView[] = rows.map((r) => ({
-        id: r.deposit.id,
-        profileId: r.deposit.profileId,
-        planId: r.deposit.planId,
-        planName: r.planName,
-        paymentMethodId: r.deposit.paymentMethodId,
-        paymentMethodSlug: r.deposit.paymentMethod,
-        paymentMethodName: null,
-        amount: r.deposit.amount,
-        currency: r.deposit.currency,
-        externalTransactionRef: r.deposit.externalTransactionRef,
-        status: r.deposit.status as DepositStatus,
-        proofStoragePath: r.deposit.proofStoragePath,
-        infoRequestMessage: r.deposit.infoRequestMessage,
-        investmentId: r.deposit.investmentId,
-        rejectionReason: r.deposit.rejectionReason,
-        submittedAt: r.deposit.submittedAt,
-        reviewedAt: r.deposit.reviewedAt,
-        approvedAt: r.deposit.approvedAt,
-        createdAt: r.deposit.createdAt,
-        customerName: r.customerName,
-        customerEmail: r.customerEmail,
-        internalNotes: r.deposit.internalNotes,
-      }));
+      const items: DepositView[] = rows.map((r) =>
+        mapDepositRow(r.deposit, {
+          planName: r.planName,
+          customerName: r.customerName,
+          customerEmail: r.customerEmail,
+        }),
+      );
 
       const total = totalRow?.count ?? 0;
       return ok({ items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) });
@@ -465,30 +521,13 @@ export class DepositService {
 
       if (!row) return fail("DEPOSIT_NOT_FOUND", "Deposit not found");
 
-      return ok({
-        id: row.deposit.id,
-        profileId: row.deposit.profileId,
-        planId: row.deposit.planId,
-        planName: row.planName,
-        paymentMethodId: row.deposit.paymentMethodId,
-        paymentMethodSlug: row.deposit.paymentMethod,
-        paymentMethodName: null,
-        amount: row.deposit.amount,
-        currency: row.deposit.currency,
-        externalTransactionRef: row.deposit.externalTransactionRef,
-        status: row.deposit.status as DepositStatus,
-        proofStoragePath: row.deposit.proofStoragePath,
-        infoRequestMessage: row.deposit.infoRequestMessage,
-        investmentId: row.deposit.investmentId,
-        rejectionReason: row.deposit.rejectionReason,
-        submittedAt: row.deposit.submittedAt,
-        reviewedAt: row.deposit.reviewedAt,
-        approvedAt: row.deposit.approvedAt,
-        createdAt: row.deposit.createdAt,
-        customerName: row.customerName,
-        customerEmail: row.customerEmail,
-        internalNotes: row.deposit.internalNotes,
-      });
+      return ok(
+        mapDepositRow(row.deposit, {
+          planName: row.planName,
+          customerName: row.customerName,
+          customerEmail: row.customerEmail,
+        }),
+      );
     } catch (error) {
       return fail("ADMIN_DEPOSIT_GET_ERROR", "Failed to load deposit", error);
     }

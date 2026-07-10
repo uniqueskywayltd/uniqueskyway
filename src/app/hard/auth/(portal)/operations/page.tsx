@@ -21,7 +21,7 @@ export default async function OperationsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Financial Operations Center</h1>
-      <p className="text-slate-400">
+      <p className="text-muted-foreground">
         Central hub for all financial workflows. Every action is ledger-driven and audited.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -29,10 +29,10 @@ export default async function OperationsPage() {
           <Link
             key={m.href}
             href={m.href}
-            className="rounded-xl border border-slate-800 bg-slate-900 p-6 transition-colors hover:border-slate-600"
+            className="rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40"
           >
             <h2 className="font-semibold">{m.title}</h2>
-            <p className="mt-1 text-sm text-slate-400">{m.desc}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{m.desc}</p>
           </Link>
         ))}
       </div>

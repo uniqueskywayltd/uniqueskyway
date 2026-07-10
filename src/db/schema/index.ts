@@ -13,6 +13,8 @@ export * from "./risk";
 export * from "./investment-engine";
 export * from "./admin";
 export * from "./migration";
+export * from "./trust-components";
+export * from "./platform-wallets";
 
 import {
   profiles,
@@ -57,6 +59,8 @@ import {
   migrationReports,
   migrationBalanceExceptions,
 } from "./migration";
+import { activityFeed } from "./trust-components";
+import { platformWallets } from "./platform-wallets";
 
 export const schema = {
   profiles,
@@ -94,4 +98,6 @@ export const schema = {
   migrationIdempotency,
   migrationReports,
   migrationBalanceExceptions,
+  activityFeed,
+  platformWallets,
 };

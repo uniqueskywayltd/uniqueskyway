@@ -83,9 +83,9 @@ VALUES
   (
     'silver',
     'Silver Plan',
-    'Entry-level plan with a 4-day duration and 4% daily return.',
-    4.0000, 16.0000,
-    50.00, 25000.00, 4, 0,
+    'Entry-level plan with a 5-day duration and 3% daily return.',
+    3.0000, 15.0000,
+    50.00, 25000.00, 5, 0,
     10.0000, true, 2,
     true, true, 1, 'USD'
   ),

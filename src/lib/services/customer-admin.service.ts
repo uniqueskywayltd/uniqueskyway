@@ -4,6 +4,7 @@ import {
   desc,
   eq,
   ilike,
+  isNotNull,
   isNull,
   or,
   sql,
@@ -21,10 +22,16 @@ import {
 } from "@/db/schema";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveAppUrl } from "@/lib/env";
+import {
+  normalizeEmail,
+  normalizeUsername,
+  type AdminCreateCustomerInput,
+} from "@/lib/auth/validation";
 import { auditService } from "./audit.service";
 import { authLockoutService } from "./auth-lockout.service";
 import { guardDatabase } from "./infrastructure-guard";
 import { portfolioService, type PortfolioData } from "./portfolio.service";
+import { profileService } from "./profile.service";
 import { walletService, type WalletSummary } from "./wallet.service";
 import { fail, ok } from "./base";
 import type { ActorContext, PaginatedResult, ServiceResult } from "./types";
@@ -34,6 +41,7 @@ export type CustomerFilters = {
   pageSize?: number;
   search?: string;
   status?: string;
+  legacyOnly?: boolean;
 };
 
 export type CustomerListItem = {
@@ -44,6 +52,7 @@ export type CustomerListItem = {
   status: string;
   emailVerified: boolean;
   loginDisabled: boolean;
+  legacyUserId: number | null;
   createdAt: Date;
   activeInvestments: number;
 };
@@ -102,14 +111,22 @@ export class CustomerAdminService {
         conditions.push(eq(profiles.status, filters.status as never));
       }
 
+      if (filters.legacyOnly) {
+        conditions.push(isNotNull(profiles.legacyUserId));
+      }
+
       if (filters.search) {
-        conditions.push(
-          or(
-            ilike(profiles.fullName, `%${filters.search}%`),
-            ilike(profiles.email, `%${filters.search}%`),
-            ilike(profiles.username, `%${filters.search}%`),
-          )!,
-        );
+        const search = filters.search.trim();
+        const numericLegacyId = /^\d+$/.test(search) ? Number(search) : null;
+        const searchConditions = [
+          ilike(profiles.fullName, `%${search}%`),
+          ilike(profiles.email, `%${search}%`),
+          ilike(profiles.username, `%${search}%`),
+        ];
+        if (numericLegacyId !== null) {
+          searchConditions.push(eq(profiles.legacyUserId, numericLegacyId));
+        }
+        conditions.push(or(...searchConditions)!);
       }
 
       const whereClause = and(...conditions);
@@ -142,6 +159,7 @@ export class CustomerAdminService {
             status: p.status,
             emailVerified: p.emailVerified,
             loginDisabled: p.loginDisabled,
+            legacyUserId: p.legacyUserId,
             createdAt: p.createdAt,
             activeInvestments: invCount?.count ?? 0,
           };
@@ -285,6 +303,7 @@ export class CustomerAdminService {
         status: profile.status,
         emailVerified: profile.emailVerified,
         loginDisabled: profile.loginDisabled,
+        legacyUserId: profile.legacyUserId,
         createdAt: profile.createdAt,
         activeInvestments: invCount?.count ?? 0,
         phone: profile.phone,
@@ -579,6 +598,99 @@ export class CustomerAdminService {
       return ok({ resetLink: data.properties?.action_link ?? null });
     } catch (error) {
       return fail("RESET_ERROR", "Failed to initiate password reset", error);
+    }
+  }
+
+  async createCustomer(input: {
+    data: AdminCreateCustomerInput;
+    adminUserId: string;
+    actor?: ActorContext;
+  }): Promise<ServiceResult<{ profileId: string }>> {
+    const infra = guardDatabase<{ profileId: string }>();
+    if (infra) return infra;
+
+    const email = normalizeEmail(input.data.email);
+    const username = normalizeUsername(input.data.username);
+
+    const existingEmail = await profileService.findByEmail(email);
+    if (existingEmail) {
+      return fail("EMAIL_EXISTS", "An account with this email already exists");
+    }
+
+    const existingUsername = await profileService.findByUsername(username);
+    if (existingUsername) {
+      return fail("USERNAME_EXISTS", "This username is already taken");
+    }
+
+    if (input.data.referralCode) {
+      const referrer = await profileService.resolveReferrer(input.data.referralCode);
+      if (!referrer) {
+        return fail("INVALID_REFERRAL", "Invalid referral code");
+      }
+      if (normalizeUsername(referrer.username) === username) {
+        return fail("SELF_REFERRAL", "Customer cannot refer themselves");
+      }
+    }
+
+    const admin = createAdminClient();
+    let authUserId: string | null = null;
+
+    try {
+      const { data: authData, error: authError } = await admin.auth.admin.createUser({
+        email,
+        password: input.data.password,
+        email_confirm: input.data.emailVerified ?? true,
+        user_metadata: {
+          full_name: input.data.fullName.trim(),
+          username,
+        },
+      });
+
+      if (authError || !authData.user) {
+        return fail("CREATE_FAILED", authError?.message ?? "Failed to create auth user", authError);
+      }
+
+      authUserId = authData.user.id;
+
+      const profileResult = await profileService.createProfileBundle({
+        authUserId,
+        email,
+        fullName: input.data.fullName,
+        username,
+        referralCode: input.data.referralCode,
+      });
+
+      if (!profileResult.success) {
+        await admin.auth.admin.deleteUser(authUserId);
+        return fail(
+          "CREATE_FAILED",
+          "Failed to create customer profile",
+          profileResult.error,
+        );
+      }
+
+      if (input.data.emailVerified) {
+        const db = getDb();
+        await db
+          .update(profiles)
+          .set({ emailVerified: true, status: "active" })
+          .where(eq(profiles.id, profileResult.data.profileId));
+      }
+
+      await auditService.log({
+        action: "create",
+        entityType: "profile",
+        entityId: profileResult.data.profileId,
+        actor: { adminUserId: input.adminUserId, ...input.actor },
+        metadata: { email, username, createdByAdmin: true },
+      });
+
+      return ok({ profileId: profileResult.data.profileId });
+    } catch (error) {
+      if (authUserId) {
+        await admin.auth.admin.deleteUser(authUserId).catch(() => undefined);
+      }
+      return fail("CREATE_FAILED", "Failed to create customer", error);
     }
   }
 }

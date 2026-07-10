@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdminProfile, getSessionUser } from "@/lib/auth/session";
 import { investmentPlanService } from "@/lib/services/investment-plan.service";
+import { AdminPageHeader } from "@/components/design-system";
 import { AdminPlansManager } from "@/components/admin/admin-plans-manager";
 import { ServiceErrorState } from "@/components/dashboard/service-error-state";
 
@@ -18,12 +19,10 @@ export default async function AdminPlansPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Investment Plan Management</h1>
-        <p className="text-slate-400">
-          Plan changes apply to new investments only — existing positions are unaffected.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Investment plan management"
+        description="Edit active plans, add new tiers, and control what appears on the homepage and deposit flow."
+      />
       <AdminPlansManager plans={result.data} />
     </div>
   );

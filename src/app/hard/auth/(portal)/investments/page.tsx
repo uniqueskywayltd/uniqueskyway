@@ -75,43 +75,41 @@ export default async function AdminInvestmentsPage({
         <ServiceErrorState code={result.error.code} message={result.error.message} />
       ) : result.data.items.length === 0 ? (
         <EmptyState
-          theme="dark"
           title="No investments found"
           description="Active and matured investment positions will appear here."
         />
       ) : (
-        <DataTable theme="dark">
+        <DataTable>
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-800 hover:bg-transparent">
-                <TableHead className="text-slate-400">Customer</TableHead>
-                <TableHead className="text-slate-400">Plan</TableHead>
-                <TableHead className="text-slate-400">Principal</TableHead>
-                <TableHead className="text-slate-400">ROI credited</TableHead>
-                <TableHead className="text-slate-400">Status</TableHead>
-                <TableHead className="text-slate-400">Matures</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground">Customer</TableHead>
+                <TableHead className="text-muted-foreground">Plan</TableHead>
+                <TableHead className="text-muted-foreground">Principal</TableHead>
+                <TableHead className="text-muted-foreground">ROI credited</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Matures</TableHead>
                 <TableHead className="sr-only">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {result.data.items.map((inv) => (
-                <TableRow key={inv.id} className="border-slate-800">
-                  <TableCell className="text-slate-200">{inv.customerName}</TableCell>
-                  <TableCell className="text-slate-200">{inv.planName}</TableCell>
-                  <TableCell className="font-medium tabular-nums text-white">
+                <TableRow key={inv.id} className="border-border">
+                  <TableCell className="text-foreground">{inv.customerName}</TableCell>
+                  <TableCell className="text-foreground">{inv.planName}</TableCell>
+                  <TableCell className="font-medium tabular-nums text-foreground">
                     {formatMoney(inv.principalAmount)}
                   </TableCell>
-                  <TableCell className="tabular-nums text-slate-200">
+                  <TableCell className="tabular-nums text-foreground">
                     {formatMoney(inv.totalRoiCredited)}
                   </TableCell>
                   <TableCell>
                     <StatusBadge
-                      theme="dark"
                       status={inv.isPaused ? "pending" : inv.status}
                       label={inv.isPaused ? "paused" : undefined}
                     />
                   </TableCell>
-                  <TableCell className="text-sm text-slate-400">
+                  <TableCell className="text-sm text-muted-foreground">
                     {inv.maturesAt ? new Date(inv.maturesAt).toLocaleDateString() : "—"}
                   </TableCell>
                   <TableCell>

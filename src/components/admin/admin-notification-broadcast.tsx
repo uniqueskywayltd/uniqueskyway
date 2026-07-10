@@ -32,7 +32,7 @@ export function AdminNotificationBroadcast() {
   }
 
   return (
-    <div className="max-w-lg space-y-4 rounded-xl border border-slate-800 bg-slate-900 p-6">
+    <div className="max-w-lg space-y-4 rounded-xl border border-border bg-card p-6">
       <h2 className="font-semibold">Broadcast in-app notification</h2>
       <div>
         <Label htmlFor="title">Title</Label>

@@ -73,7 +73,8 @@ export type TransformedUser = {
   registeredAt: Date;
   avatarFilename: string | null;
   status: "active" | "suspended" | "pending_verification";
-  passwordResetRequired: true;
+  legacyPassword: string;
+  passwordResetRequired: boolean;
 };
 
 export type TransformedLedgerEntry = {

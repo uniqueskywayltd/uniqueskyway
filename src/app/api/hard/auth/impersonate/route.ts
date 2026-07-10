@@ -1,11 +1,16 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import {
   getActorFromRequest,
   jsonError,
-  jsonSuccess,
 } from "@/lib/api/auth-route";
 import { requireAdmin } from "@/lib/auth/api-guard";
-import { setImpersonation, clearImpersonation } from "@/lib/auth/impersonation";
+import {
+  IMPERSONATE_PROFILE_COOKIE,
+  IMPERSONATE_RETURN_COOKIE,
+  IMPERSONATE_QUERY_PARAM,
+  buildImpersonationCookieOptions,
+  buildImpersonationDashboardPath,
+} from "@/lib/auth/impersonation";
 import { PERMISSIONS } from "@/lib/permissions/constants";
 import { auditService } from "@/lib/services/audit.service";
 import { getCustomerProfileById } from "@/lib/auth/session";
@@ -36,8 +41,6 @@ export async function POST(request: NextRequest) {
     return jsonError("Customer not found", 404);
   }
 
-  await setImpersonation(profile.id);
-
   const actor = getActorFromRequest(request);
   await auditService.log({
     action: "update",
@@ -47,14 +50,18 @@ export async function POST(request: NextRequest) {
     metadata: { impersonate: "start", customerEmail: profile.email },
   });
 
-  return jsonSuccess({ redirectTo: "/dashboard" });
+  return NextResponse.json({
+    redirectTo: buildImpersonationDashboardPath(profile.id),
+    openInNewTab: true,
+  });
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   const auth = await requireAdmin(PERMISSIONS.USERS_READ);
   if (!auth.ok) return auth.response;
 
-  await clearImpersonation();
+  const returnTo =
+    request.cookies.get(IMPERSONATE_RETURN_COOKIE)?.value ?? "/hard/auth/customers";
 
   await auditService.log({
     action: "update",
@@ -64,5 +71,9 @@ export async function DELETE() {
     metadata: { impersonate: "end" },
   });
 
-  return jsonSuccess({ redirectTo: "/hard/auth" });
+  const cleared = buildImpersonationCookieOptions(0);
+  const response = NextResponse.json({ redirectTo: returnTo });
+  response.cookies.set(IMPERSONATE_PROFILE_COOKIE, "", cleared);
+  response.cookies.set(IMPERSONATE_RETURN_COOKIE, "", cleared);
+  return response;
 }

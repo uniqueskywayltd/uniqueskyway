@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
-import { userSessions } from "@/db/schema";
+import { adminUsers, userSessions } from "@/db/schema";
 import {
   AUTH_ROUTES,
   DASHBOARD_PREFIX,
@@ -16,9 +16,15 @@ import {
 } from "@/lib/auth/validation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { FEATURE_FLAGS } from "@/lib/constants/feature-flags";
 import { isStorageConfigured, resolveAppUrl } from "@/lib/env";
+import {
+  buildVerificationFromGenerateLink,
+} from "@/lib/auth/verification";
 import { clearImpersonation, clearStaffSession } from "@/lib/auth/impersonation";
+import { getAdminProfile } from "@/lib/auth/session";
+import { ADMIN_PREFIX } from "@/lib/auth/constants";
 import { auditService } from "./audit.service";
 import { authLockoutService } from "./auth-lockout.service";
 import { emailService } from "./email.service";
@@ -29,6 +35,17 @@ import { fail, ok } from "./base";
 import type { ActorContext, ServiceResult } from "./types";
 
 const appUrl = resolveAppUrl;
+
+function mapRegisterAuthError(error: { message?: string; code?: string } | null): string {
+  const message = error?.message?.toLowerCase() ?? "";
+  if (message.includes("already registered") || message.includes("already been registered")) {
+    return "An account with this email already exists. Try signing in instead.";
+  }
+  if (message.includes("password")) {
+    return "Password does not meet security requirements. Use at least 8 characters with upper, lower, and a number.";
+  }
+  return GENERIC_REGISTER_ERROR;
+}
 
 export type RegisterAvatarInput = {
   buffer: Buffer;
@@ -64,12 +81,15 @@ export class AuthService {
 
     const existingEmail = await profileService.findByEmail(email);
     if (existingEmail) {
-      return fail("REGISTER_FAILED", GENERIC_REGISTER_ERROR);
+      return fail(
+        "EMAIL_EXISTS",
+        "An account with this email already exists. Try signing in instead.",
+      );
     }
 
     const existingUsername = await profileService.findByUsername(username);
     if (existingUsername) {
-      return fail("REGISTER_FAILED", GENERIC_REGISTER_ERROR);
+      return fail("USERNAME_EXISTS", "This username is already taken. Please choose another.");
     }
 
     if (input.referralCode) {
@@ -82,10 +102,10 @@ export class AuthService {
       }
     }
 
-    const admin = createAdminClient();
     let authUserId: string | null = null;
 
     try {
+      const admin = createAdminClient();
       const { data: authData, error: authError } =
         await admin.auth.admin.createUser({
           email,
@@ -98,7 +118,7 @@ export class AuthService {
         });
 
       if (authError || !authData.user) {
-        return fail("REGISTER_FAILED", GENERIC_REGISTER_ERROR, authError);
+        return fail("REGISTER_FAILED", mapRegisterAuthError(authError), authError);
       }
 
       authUserId = authData.user.id;
@@ -113,15 +133,23 @@ export class AuthService {
 
       if (!profileResult.success) {
         await admin.auth.admin.deleteUser(authUserId);
-        return fail("REGISTER_FAILED", GENERIC_REGISTER_ERROR, profileResult.error);
+        return fail(
+          "REGISTER_FAILED",
+          "We could not finish setting up your account. Please try again or contact support.",
+          profileResult.error,
+        );
       }
 
       if (avatar && isStorageConfigured()) {
-        await profileService.uploadAvatar(
+        const avatarResult = await profileService.uploadAvatar(
           authUserId,
           profileResult.data.profileId,
           avatar,
         );
+        if (!avatarResult.success) {
+          // Avatar is optional — do not block registration.
+          console.warn("Avatar upload skipped during registration:", avatarResult.error.code);
+        }
       }
 
       const { data: linkData, error: linkError } =
@@ -134,10 +162,20 @@ export class AuthService {
           },
         });
 
-      if (linkError || !linkData.properties?.action_link) {
+      if (linkError || !linkData.properties?.hashed_token) {
         await admin.auth.admin.deleteUser(authUserId);
-        return fail("REGISTER_FAILED", GENERIC_REGISTER_ERROR, linkError);
+        return fail(
+          "REGISTER_FAILED",
+          "We could not send your verification email. Please try again shortly.",
+          linkError,
+        );
       }
+
+      const verification = buildVerificationFromGenerateLink(
+        linkData.properties,
+        "signup",
+        email,
+      );
 
       await auditService.log({
         action: "create",
@@ -145,6 +183,8 @@ export class AuthService {
         entityId: profileResult.data.profileId,
         actor: { ...actor, profileId: profileResult.data.profileId },
         afterState: { email, username },
+      }).catch((err) => {
+        console.warn("Audit log skipped during registration:", err);
       });
 
       await sessionService.recordLogin({
@@ -153,29 +193,55 @@ export class AuthService {
         actor,
       });
 
-      await emailService.sendWelcome({
+      const emailResult = await emailService.sendWelcome({
         to: email,
         name: input.fullName.trim(),
-        verifyUrl: linkData.properties.action_link,
+        verifyUrl: verification.verifyUrl,
+        otp: verification.otp,
       });
+
+      if (!emailResult.sent) {
+        console.warn("Welcome email not sent during registration:", emailResult.error);
+      }
 
       return ok({ checkEmail: true });
     } catch (error) {
       if (authUserId) {
         await createAdminClient().auth.admin.deleteUser(authUserId).catch(() => {});
       }
-      return fail("REGISTER_FAILED", GENERIC_REGISTER_ERROR, error);
+      const message =
+        error instanceof Error &&
+        error.message.includes("SUPABASE_SERVICE_ROLE_KEY")
+          ? "Sign-up is temporarily unavailable. Please try again later or contact support."
+          : "We could not complete registration. Please try again later.";
+      return fail("REGISTER_FAILED", message, error);
     }
   }
 
   async login(
     input: LoginInput,
     actor?: ActorContext,
-  ): Promise<ServiceResult<{ redirectTo: string }>> {
+    supabaseClient?: SupabaseClient,
+  ): Promise<ServiceResult<{ redirectTo: string; isStaffLogin?: boolean }>> {
     const allowed = await this.assertLoginAllowed();
     if (!allowed.success) return allowed;
 
     const email = normalizeEmail(input.email);
+
+    const profileByEmail = await profileService.findByEmail(email);
+    if (profileByEmail?.loginDisabled) {
+      await sessionService.recordLogin({
+        profileId: profileByEmail.id,
+        success: false,
+        failureReason: "login_disabled",
+        actor,
+      });
+      return fail(
+        "LOGIN_DISABLED",
+        "Login is disabled for this account. Please contact support.",
+      );
+    }
+
     const lockout = await authLockoutService.getStatus(email);
 
     if (lockout.locked) {
@@ -187,7 +253,7 @@ export class AuthService {
       return fail("ACCOUNT_LOCKED", GENERIC_AUTH_ERROR);
     }
 
-    const supabase = await createClient();
+    const supabase = supabaseClient ?? (await createClient());
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: input.password,
@@ -204,6 +270,37 @@ export class AuthService {
     }
 
     await authLockoutService.clear(email);
+
+    const admin = await getAdminProfile(data.user.id);
+    if (admin) {
+      const db = getDb();
+      await db
+        .update(adminUsers)
+        .set({ lastLoginAt: new Date() })
+        .where(eq(adminUsers.id, admin.id));
+
+      await sessionService.upsertSession({
+        adminUserId: admin.id,
+        authSessionId: data.session?.access_token?.slice(0, 32),
+        actor: { ...actor, adminUserId: admin.id },
+      });
+
+      await sessionService.recordLogin({
+        adminUserId: admin.id,
+        success: true,
+        actor: { ...actor, adminUserId: admin.id },
+      });
+
+      await auditService.log({
+        action: "login",
+        entityType: "admin_user",
+        entityId: admin.id,
+        actor: { adminUserId: admin.id, ...actor },
+        metadata: { entryPoint: "customer_login_page" },
+      });
+
+      return ok({ redirectTo: ADMIN_PREFIX, isStaffLogin: true });
+    }
 
     const profile = await profileService.findByAuthUserId(data.user.id);
 
@@ -282,7 +379,7 @@ export class AuthService {
 
     const redirectTo = emailVerified
       ? `${DASHBOARD_PREFIX}`
-      : AUTH_ROUTES.verifyEmail;
+      : `${AUTH_ROUTES.register}?verify=1&email=${encodeURIComponent(profile.email)}`;
 
     return ok({ redirectTo });
   }
@@ -330,11 +427,17 @@ export class AuthService {
       },
     });
 
-    if (!error && data.properties?.action_link) {
+    if (!error && data.properties?.hashed_token) {
+      const verification = buildVerificationFromGenerateLink(
+        data.properties,
+        "recovery",
+        normalized,
+      );
       await emailService.sendPasswordReset({
         to: normalized,
         name: profile.fullName,
-        resetUrl: data.properties.action_link,
+        resetUrl: verification.verifyUrl,
+        otp: verification.otp,
       });
     }
 
@@ -366,11 +469,17 @@ export class AuthService {
       },
     });
 
-    if (!error && data.properties?.action_link) {
+    if (!error && data.properties?.hashed_token) {
+      const verification = buildVerificationFromGenerateLink(
+        data.properties,
+        "verify",
+        normalized,
+      );
       await emailService.sendVerification({
         to: normalized,
         name: profile.fullName,
-        verifyUrl: data.properties.action_link,
+        verifyUrl: verification.verifyUrl,
+        otp: verification.otp,
       });
     }
 

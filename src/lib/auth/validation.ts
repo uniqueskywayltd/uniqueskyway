@@ -81,6 +81,29 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 
+export const adminCreateCustomerSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Name is required")
+    .max(100, "Name is too long"),
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters")
+    .max(24, "Username is too long")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores",
+    ),
+  email: z.string().trim().email("Enter a valid email address").max(255),
+  password: passwordSchema,
+  referralCode: z.string().trim().max(50).optional(),
+  emailVerified: z.boolean().optional().default(true),
+});
+
+export type AdminCreateCustomerInput = z.infer<typeof adminCreateCustomerSchema>;
+
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }

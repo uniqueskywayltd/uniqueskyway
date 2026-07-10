@@ -11,6 +11,12 @@ import type { ServiceResult } from "./types";
  */
 export class FeatureFlagService {
   async isEnabled(key: FeatureFlagKey): Promise<boolean> {
+    if (key === FEATURE_FLAGS.REGISTRATIONS_ENABLED) {
+      const envOverride = process.env.REGISTRATIONS_ENABLED?.trim().toLowerCase();
+      if (envOverride === "true" || envOverride === "1") return true;
+      if (envOverride === "false" || envOverride === "0") return false;
+    }
+
     try {
       const db = getDb();
       const [flag] = await db
@@ -41,6 +47,12 @@ export class FeatureFlagService {
   async requireEnabled(key: FeatureFlagKey): Promise<ServiceResult<void>> {
     const enabled = await this.isEnabled(key);
     if (!enabled) {
+      if (key === FEATURE_FLAGS.REGISTRATIONS_ENABLED) {
+        return fail(
+          "FEATURE_DISABLED",
+          "New account registration is temporarily unavailable. Please try again later or contact support.",
+        );
+      }
       return fail("FEATURE_DISABLED", `Feature '${key}' is currently disabled`);
     }
     return ok(undefined);

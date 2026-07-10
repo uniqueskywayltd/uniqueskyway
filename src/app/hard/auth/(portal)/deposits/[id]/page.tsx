@@ -18,7 +18,7 @@ export default async function AdminDepositDetailPage({
 
   if (!result.success) {
     return (
-      <div className="text-slate-400">
+      <div className="text-muted-foreground">
         Deposit not found or unavailable.
       </div>
     );

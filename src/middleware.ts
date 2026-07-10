@@ -22,10 +22,11 @@ function applyPrivacyHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
-function notFoundResponse(): NextResponse {
-  return new NextResponse("Not Found", {
-    status: 404,
-    headers: { "Content-Type": "text/plain; charset=utf-8", ...PRIVACY_HEADERS },
+function accessGateResponse(): NextResponse {
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Access Required</title></head><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;color:#0f172a"><h1>Access required</h1><p>Unique Sky Way is currently available by invitation only. Use the private access link provided by your administrator.</p><p style="color:#64748b;font-size:0.875rem">If you have an access link, open it in this browser to continue.</p></body></html>`;
+  return new NextResponse(html, {
+    status: 403,
+    headers: { "Content-Type": "text/html; charset=utf-8", ...PRIVACY_HEADERS },
   });
 }
 
@@ -68,7 +69,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (!hasValidAccessCookie(accessCookie)) {
-      return notFoundResponse();
+      return accessGateResponse();
     }
   }
 

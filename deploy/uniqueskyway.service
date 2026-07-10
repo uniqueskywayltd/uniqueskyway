@@ -1,0 +1,24 @@
+# systemd unit — alternative to PM2
+# Install:
+#   sudo cp deploy/uniqueskyway.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now uniqueskyway
+
+[Unit]
+Description=Unique Sky Way Next.js Application
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/uniqueskyway/current
+EnvironmentFile=/var/www/uniqueskyway/shared/.env.production
+ExecStart=/usr/bin/node /var/www/uniqueskyway/current/server.js
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/www/uniqueskyway/shared/logs/app.log
+StandardError=append:/var/www/uniqueskyway/shared/logs/app-error.log
+
+[Install]
+WantedBy=multi-user.target

@@ -12,6 +12,7 @@ import {
 import { id, timestamps } from "./common";
 import { investmentPlans, investments } from "./investments";
 import { paymentMethods, withdrawalMethods } from "./finance";
+import { platformWallets } from "./platform-wallets";
 import {
   depositStatusEnum,
   ledgerAccountTypeEnum,
@@ -109,6 +110,15 @@ export const depositRequests = pgTable(
     submittedAt: timestamp("submitted_at", { withTimezone: true, mode: "date" }),
     approvedAt: timestamp("approved_at", { withTimezone: true, mode: "date" }),
     rejectionReason: text("rejection_reason"),
+    platformWalletId: uuid("platform_wallet_id").references(() => platformWallets.id, {
+      onDelete: "set null",
+    }),
+    walletAddressSnapshot: text("wallet_address_snapshot"),
+    assetSymbolSnapshot: text("asset_symbol_snapshot"),
+    assetNameSnapshot: text("asset_name_snapshot"),
+    networkSnapshot: text("network_snapshot"),
+    qrCodePathSnapshot: text("qr_code_path_snapshot"),
+    walletInstructionsSnapshot: text("wallet_instructions_snapshot"),
     ...timestamps,
   },
   (table) => [
@@ -116,6 +126,7 @@ export const depositRequests = pgTable(
     index("deposit_requests_status_idx").on(table.status),
     index("deposit_requests_payment_method_id_idx").on(table.paymentMethodId),
     index("deposit_requests_investment_id_idx").on(table.investmentId),
+    index("deposit_requests_platform_wallet_id_idx").on(table.platformWalletId),
   ],
 );
 

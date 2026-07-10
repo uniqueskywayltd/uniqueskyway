@@ -20,6 +20,7 @@ export type InvestmentPlanView = {
   currency?: string;
   compounding?: boolean;
   reinvestEnabled?: boolean;
+  sortOrder?: number;
 };
 
 export type PublicPlanView = InvestmentPlanView & {
@@ -82,6 +83,8 @@ export class InvestmentPlanService {
           maxDeposit: p.maxDeposit,
           durationDays: p.durationDays,
           lockPeriodDays: p.lockPeriodDays,
+          referralCommissionPercent: p.referralCommissionPercent,
+          sortOrder: p.sortOrder,
         })),
       );
     } catch (error) {

@@ -1,0 +1,15 @@
+# Cron jobs for Namecheap SHARED hosting (cPanel → Cron Jobs)
+#
+# cPanel does not support server crontab the same way as VPS.
+# Add these in: cPanel → Advanced → Cron Jobs → Standard
+#
+# Replace YOUR_DOMAIN and paste CRON_SECRET from your Node.js app env vars.
+#
+# --- ROI accrual — daily 06:00 UTC ---
+# 0 6 * * * curl -fsS -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" -H "User-Agent: USW-Cron/1.0" "https://uniqueskyway.com/api/cron/roi" >> ~/logs/cron-roi.log 2>&1
+#
+# --- Email notifications — every 15 minutes ---
+# */15 * * * * curl -fsS -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" -H "User-Agent: USW-Cron/1.0" "https://uniqueskyway.com/api/cron/notifications" >> ~/logs/cron-notifications.log 2>&1
+#
+# Create log folder first (File Manager or Terminal):
+#   mkdir -p ~/logs

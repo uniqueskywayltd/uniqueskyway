@@ -461,7 +461,20 @@
 
 ---
 
-## ADR-041: Privacy Shield and Pre-Launch Access Gate
+## ADR-042: Platform Wallets (Phase 1 — Manual Launch)
+
+**Decision:** Deposit wallet addresses are stored in `platform_wallets` — company-owned configuration managed by administrators, not tied to individual admin accounts. Customer deposits snapshot wallet details on `deposit_requests` at submission time.
+
+**Rationale:** Hardcoded wallet addresses in payment method config do not scale to unlimited assets/networks and cannot support Phase 2 (blockchain monitoring) or Phase 3 (automatic deposits) without schema redesign. Snapshots preserve audit accuracy when wallets change.
+
+**Implications:**
+- `platform_wallets_enabled` feature flag gates customer deposits; admins can configure wallets while disabled
+- One primary wallet per asset+network enforced in `PlatformWalletService`
+- `auto_detection_enabled` and `required_confirmations` columns reserved for Phase 2
+- Deposit approval still flows through existing `DepositService.approveDeposit()` → investment engine → ledger
+- No ledger entries or investments created on customer submit (`status: submitted`)
+
+---
 
 **Decision:** Production deployments use a privacy shield middleware that blocks search engine crawlers, sets restrictive `X-Robots-Tag` headers, and optionally enforces link-only access via `SITE_ACCESS_KEY` (query param → cookie).
 

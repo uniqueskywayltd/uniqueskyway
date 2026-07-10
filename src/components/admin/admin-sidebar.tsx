@@ -21,7 +21,10 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Layers,
+  LineChart,
+  Radio,
 } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const navSections = [
@@ -48,7 +51,10 @@ const navSections = [
     items: [
       { href: "/hard/auth/plans", label: "Investment Plans", icon: TrendingUp },
       { href: "/hard/auth/payment-methods", label: "Payment Methods", icon: CreditCard },
+      { href: "/hard/auth/platform-wallets", label: "Platform Wallets", icon: Wallet },
       { href: "/hard/auth/feature-flags", label: "Feature Flags", icon: Flag },
+      { href: "/hard/auth/activity-feed", label: "Activity Feed", icon: Radio },
+      { href: "/hard/auth/market-settings", label: "Market Settings", icon: LineChart },
       { href: "/hard/auth/settings", label: "Settings", icon: Settings },
     ],
   },
@@ -69,15 +75,15 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-slate-800 bg-slate-950">
-      <div className="border-b border-slate-800 px-4 py-5">
-        <p className="text-sm font-semibold text-white">Unique Sky Way</p>
-        <p className="text-xs text-slate-400">Admin Console</p>
+    <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-background">
+      <div className="border-b border-border px-4 py-5">
+        <p className="text-sm font-semibold text-foreground">Unique Sky Way</p>
+        <p className="text-xs text-muted-foreground">Admin Console</p>
       </div>
       <nav className="flex-1 space-y-6 overflow-y-auto p-3" aria-label="Admin navigation">
         {navSections.map((section) => (
           <div key={section.label}>
-            <p className="mb-2 px-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-500">
+            <p className="mb-2 px-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
               {section.label}
             </p>
             <div className="space-y-0.5">
@@ -91,10 +97,10 @@ export function AdminSidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+                      "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                       active
-                        ? "bg-slate-800 font-medium text-white"
-                        : "text-slate-400 hover:bg-slate-800/60 hover:text-white",
+                        ? "bg-primary/10 font-medium text-primary"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -106,6 +112,9 @@ export function AdminSidebar() {
           </div>
         ))}
       </nav>
+      <div className="border-t border-border p-3">
+        <ThemeToggle className="w-full" />
+      </div>
     </aside>
   );
 }

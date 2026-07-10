@@ -2,6 +2,10 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { MarketingLayout } from "@/components/layout/marketing-layout";
 import { HeroSection } from "@/components/marketing/hero-section";
+import {
+  LazyActivityFeed,
+  LazyMarketTicker,
+} from "@/components/marketing/homepage-trust-components";
 import { HowItWorksPreview } from "@/components/marketing/how-it-works-preview";
 import { PlansPreview } from "@/components/marketing/plans-preview";
 import { ServicesPreview } from "@/components/marketing/services-preview";
@@ -16,7 +20,7 @@ import { cn } from "@/lib/utils";
 
 export default function HomePage() {
   return (
-    <MarketingLayout>
+    <MarketingLayout belowHeader={<LazyMarketTicker />} floatingWidgets={<LazyActivityFeed />}>
       <HeroSection />
       <StatsBar />
       <ServicesPreview />

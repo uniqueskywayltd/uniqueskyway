@@ -24,7 +24,7 @@ export default async function AdminNotificationsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold">Notification Management</h1>
-        <p className="text-slate-400">Broadcast and monitor delivery status</p>
+        <p className="text-muted-foreground">Broadcast and monitor delivery status</p>
       </div>
 
       <AdminNotificationBroadcast />
@@ -32,19 +32,19 @@ export default async function AdminNotificationsPage() {
       {deliveries.success ? (
         <div>
           <h2 className="mb-4 font-semibold">Recent deliveries</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="text-slate-400">Time</TableHead>
-                  <TableHead className="text-slate-400">Title</TableHead>
-                  <TableHead className="text-slate-400">Channel</TableHead>
-                  <TableHead className="text-slate-400">Status</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Time</TableHead>
+                  <TableHead className="text-muted-foreground">Title</TableHead>
+                  <TableHead className="text-muted-foreground">Channel</TableHead>
+                  <TableHead className="text-muted-foreground">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {deliveries.data.items.map((n) => (
-                  <TableRow key={n.id} className="border-slate-800">
+                  <TableRow key={n.id} className="border-border">
                     <TableCell className="text-sm">{new Date(n.createdAt).toLocaleString()}</TableCell>
                     <TableCell>{n.title}</TableCell>
                     <TableCell className="capitalize">{n.eventType.split(".")[0]}</TableCell>

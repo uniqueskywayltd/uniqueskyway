@@ -1,3 +1,4 @@
+import { getImpersonateProfileId } from "@/lib/auth/impersonation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getDbSafe } from "@/db";
@@ -31,6 +32,34 @@ export type AdminProfile = {
   role: AdminRole;
   isActive: boolean;
 };
+
+export type DashboardSession = {
+  user: SessionUser;
+  profile: CustomerProfile;
+  impersonating: boolean;
+};
+
+/** Resolves the customer profile for dashboard pages, including admin impersonation. */
+export async function getDashboardSession(): Promise<DashboardSession | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
+
+  const impersonateId = await getImpersonateProfileId();
+  if (impersonateId) {
+    const admin = await getAdminProfile(user.authUserId);
+    if (!admin) return null;
+
+    const profile = await getCustomerProfileById(impersonateId);
+    if (!profile) return null;
+
+    return { user, profile, impersonating: true };
+  }
+
+  const profile = await getCustomerProfile(user.authUserId);
+  if (!profile) return null;
+
+  return { user, profile, impersonating: false };
+}
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   try {

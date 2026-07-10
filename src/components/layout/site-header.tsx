@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand/brand-logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { ThemeToggleMobile } from "@/components/theme/theme-toggle-icon";
 import {
   marketingHeaderOutlineBtn,
   marketingHeaderPrimaryBtn,
@@ -50,7 +52,7 @@ export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="relative z-40 border-b border-border/50 bg-white">
+    <header className="relative z-40 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -58,7 +60,7 @@ export function SiteHeader() {
           aria-label="Unique Sky Way home"
         >
           <BrandLogo
-            variant="light"
+            variant="theme"
             width={140}
             priority
             className="h-auto w-[112px] sm:w-[128px] md:w-[136px]"
@@ -71,7 +73,8 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2.5 md:flex">
+          <ThemeToggle />
           <Link href="/login" className={marketingHeaderOutlineBtn()}>
             Sign in
           </Link>
@@ -80,7 +83,9 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        <button
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggleMobile />
+          <button
           type="button"
           className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -88,11 +93,12 @@ export function SiteHeader() {
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+          </button>
+        </div>
       </div>
 
       {mobileOpen ? (
-        <div className="border-t border-border/50 bg-white px-4 py-5 md:hidden">
+        <div className="border-t border-border/50 bg-background px-4 py-5 md:hidden">
           <nav className="flex flex-col gap-0.5" aria-label="Mobile navigation">
             {mainNavLinks.map((link) => (
               <NavLink

@@ -7,7 +7,12 @@ export const section = {
   paddingDark: "py-20 sm:py-24",
   container: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
   eyebrow: "text-xs font-medium uppercase tracking-[0.14em] text-primary",
-  eyebrowLight: "text-xs font-medium uppercase tracking-[0.14em] text-slate-400",
+  eyebrowLight: "text-xs font-medium uppercase tracking-[0.14em] text-slate-500",
+  /** High-contrast tokens for outdoor / bright-light readability */
+  eyebrowSun: "text-xs font-semibold uppercase tracking-[0.14em] text-primary",
+  headingSun:
+    "mt-3 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 sm:text-4xl leading-[1.15]",
+  bodySun: "mt-4 max-w-2xl text-base leading-relaxed text-slate-700 dark:text-slate-300",
   heading: "mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl leading-[1.15]",
   headingLight: "mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl leading-[1.15]",
   body: "mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground",
@@ -17,8 +22,12 @@ export const section = {
 
 export const card = {
   base: "overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm transition-shadow duration-300 hover:shadow-md",
+  /** Elevated surface for outdoor / high-glare readability */
+  elevated:
+    "overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.08)] transition-shadow duration-300 hover:shadow-[0_12px_40px_rgba(15,23,42,0.12)]",
   media: "relative aspect-[4/3] overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm",
   dark: "overflow-hidden rounded-xl border border-white/[0.08] bg-slate-950/90 text-slate-200 shadow-sm",
+  sun: "overflow-hidden rounded-xl border border-slate-200/90 bg-white text-slate-900 shadow-md shadow-slate-900/8 ring-1 ring-slate-900/5 dark:border-border dark:bg-card dark:text-foreground dark:shadow-sm dark:ring-border/50",
   padding: "p-6 sm:p-7",
 } as const;
 

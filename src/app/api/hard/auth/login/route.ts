@@ -8,11 +8,11 @@ import {
 import { GENERIC_AUTH_ERROR } from "@/lib/auth/constants";
 import { loginSchema } from "@/lib/auth/validation";
 import { getAdminProfile } from "@/lib/auth/session";
-import { createClient } from "@/lib/supabase/server";
+import { STAFF_SESSION_COOKIE, buildImpersonationCookieOptions } from "@/lib/auth/impersonation";
 import { auditService } from "@/lib/services/audit.service";
-import { setStaffSession } from "@/lib/auth/impersonation";
 import { authLockoutService } from "@/lib/services/auth-lockout.service";
 import { sessionService } from "@/lib/services/session.service";
+import { createRouteHandlerSupabase } from "@/lib/supabase/route-handler";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { adminUsers } from "@/db/schema";
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     return jsonError(GENERIC_AUTH_ERROR, 429);
   }
 
-  const supabase = await createClient();
+  const { supabase, withAuthCookies } = createRouteHandlerSupabase(request);
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password: parsed.data.password,
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     actor: { adminUserId: admin.id, ...actor },
   });
 
-  await setStaffSession();
-
-  return jsonSuccess({ redirectTo: "/hard/auth" });
+  const response = withAuthCookies(jsonSuccess({ redirectTo: "/hard/auth" }));
+  response.cookies.set(STAFF_SESSION_COOKIE, "1", buildImpersonationCookieOptions(60 * 60 * 24 * 7));
+  return response;
 }

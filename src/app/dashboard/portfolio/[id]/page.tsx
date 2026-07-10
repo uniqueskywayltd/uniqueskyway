@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { redirect } from "next/navigation";
 
-import { getCustomerProfile, getSessionUser } from "@/lib/auth/session";
+import { getDashboardSession } from "@/lib/auth/session";
 
 import { portfolioService } from "@/lib/services/portfolio.service";
 
@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 
 import { buttonVariants } from "@/components/ui/button";
 
+import { InvestmentAccrualLive } from "@/components/dashboard/investment-accrual-live";
+
 export default async function InvestmentDetailPage({
 
   params,
@@ -28,13 +30,9 @@ export default async function InvestmentDetailPage({
 
 }) {
 
-  const user = await getSessionUser();
-
-  if (!user) redirect("/login");
-
-  const profile = await getCustomerProfile(user.authUserId);
-
-  if (!profile) redirect("/login");
+  const session = await getDashboardSession();
+  if (!session) redirect("/login");
+  const { profile } = session;
 
 
 
@@ -147,15 +145,31 @@ export default async function InvestmentDetailPage({
 
 
 
+      <InvestmentAccrualLive
+        status={inv.status}
+        isPaused={inv.isPaused}
+        principalAmount={inv.principalAmount}
+        accruedInterest={inv.accruedInterest}
+        dailyRoiPercent={inv.dailyRoiPercent}
+        compounding={inv.compounding}
+        startedAt={inv.startedAt}
+        lastAccrualAt={inv.lastAccrualAt}
+        lockPeriodDays={inv.lockPeriodDays}
+        durationDays={inv.durationDays}
+        maturesAt={inv.maturesAt}
+        currency={inv.currency}
+        planName={inv.planName}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-        <StatCard title="Principal" value={formatMoney(inv.principalAmount)} />
+        <StatCard title="Principal" value={formatMoney(inv.principalAmount, inv.currency)} />
 
-        <StatCard title="ROI earned" value={formatMoney(preview.currentRoiEarned)} />
+        <StatCard title="ROI earned" value={formatMoney(preview.currentRoiEarned, inv.currency)} />
 
-        <StatCard title="Daily earnings" value={formatMoney(preview.dailyEarnings)} />
+        <StatCard title="Daily earnings" value={formatMoney(preview.dailyEarnings, inv.currency)} />
 
-        <StatCard title="Est. maturity value" value={formatMoney(preview.estimatedMaturityValue)} />
+        <StatCard title="Est. maturity value" value={formatMoney(preview.estimatedMaturityValue, inv.currency)} />
 
       </div>
 
@@ -226,6 +240,36 @@ export default async function InvestmentDetailPage({
 
 
         <div className="rounded-xl border border-border/60 bg-card p-6">
+
+          <h2 className="mb-1 font-semibold">Interest history</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Each completed accrual day is recorded here and your live counter starts fresh.
+          </p>
+
+          {inv.timeline.filter((e) => e.eventType === "roi_accrued").length ? (
+            <ul className="mb-6 space-y-3">
+              {inv.timeline
+                .filter((e) => e.eventType === "roi_accrued")
+                .map((event) => (
+                  <li
+                    key={event.id}
+                    className="flex items-center justify-between rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-sm"
+                  >
+                    <div>
+                      <p className="font-medium">{event.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(event.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    {event.amount ? (
+                      <p className="font-semibold text-emerald-600">{formatMoney(event.amount, inv.currency)}</p>
+                    ) : null}
+                  </li>
+                ))}
+            </ul>
+          ) : (
+            <p className="mb-6 text-sm text-muted-foreground">No interest payouts yet — accrual will appear here daily.</p>
+          )}
 
           <h2 className="mb-4 font-semibold">Activity timeline</h2>
 

@@ -12,6 +12,12 @@ const privacyHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  /** VPS-only minimal bundle — disabled for cPanel shared hosting (use build:cpanel). */
+  ...(process.env.NEXT_OUTPUT_STANDALONE === "1" ? { output: "standalone" as const } : {}),
+  /** Shared hosting: avoid sharp/image optimizer memory spikes during build & runtime. */
+  ...(process.env.NEXT_CPANEL === "1"
+    ? { images: { unoptimized: true } }
+    : {}),
   turbopack: {
     root: path.join(__dirname),
   },

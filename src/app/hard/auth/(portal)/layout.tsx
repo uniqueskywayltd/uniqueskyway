@@ -1,6 +1,8 @@
 import { getAdminProfile, getSessionUser } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { AdminHeader } from "@/components/admin/admin-header";
+import { InactivityGuard } from "@/components/auth/inactivity-guard";
 
 export default async function AdminLayout({
   children,
@@ -14,20 +16,13 @@ export default async function AdminLayout({
   if (!admin) redirect("/hard/auth/login");
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-dvh bg-background text-foreground lg:flex">
+      <InactivityGuard logoutUrl="/api/hard/auth/logout?reason=inactivity" />
       <AdminSidebar />
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-slate-800 px-6">
-          <p className="text-sm text-slate-400">
-            Signed in as <span className="text-white">{admin.fullName}</span>
-            <span className="ml-2 capitalize text-slate-500">({admin.role.replace("_", " ")})</span>
-          </p>
-          <form action="/api/auth/logout" method="POST">
-            <button className="text-sm text-slate-400 hover:text-white">Sign out</button>
-          </form>
-        </header>
-        <main className="flex-1 overflow-auto p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl space-y-8">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AdminHeader fullName={admin.fullName} role={admin.role} />
+        <main className="mx-auto w-full max-w-7xl flex-1 space-y-8 p-6 lg:p-8">
+          {children}
         </main>
       </div>
     </div>

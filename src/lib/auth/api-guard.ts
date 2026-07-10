@@ -128,3 +128,40 @@ export async function requireSuperAdmin(): Promise<
 
   return auth;
 }
+
+export async function requireAdminAny(
+  permissions: Permission[],
+): Promise<{ ok: true; ctx: AdminContext } | { ok: false; response: NextResponse }> {
+  const user = await getSessionUser();
+  if (!user) {
+    return { ok: false, response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+
+  const admin = await getAdminProfile(user.authUserId);
+  if (!admin) {
+    return { ok: false, response: NextResponse.json({ error: "Admin not found" }, { status: 404 }) };
+  }
+
+  for (const permission of permissions) {
+    const perm = await permissionService.requirePermission(user.authUserId, permission);
+    if (perm.success) {
+      return {
+        ok: true,
+        ctx: {
+          authUserId: user.authUserId,
+          email: user.email,
+          adminId: admin.id,
+          role: admin.role,
+        },
+      };
+    }
+  }
+
+  return {
+    ok: false,
+    response: NextResponse.json(
+      { error: "You do not have permission to perform this action" },
+      { status: 403 },
+    ),
+  };
+}

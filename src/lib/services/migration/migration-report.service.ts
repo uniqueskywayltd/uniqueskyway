@@ -30,13 +30,15 @@ export class MigrationReportService {
     },
   ) {
     const db = getDb();
-    mkdirSync(MIGRATION_REPORTS_DIR, { recursive: true });
+    let filePath: string | null = null;
 
-    const filePath = path.join(
-      MIGRATION_REPORTS_DIR,
-      `${runId}-${reportType}.json`,
-    );
-    writeFileSync(filePath, JSON.stringify(payload, null, 2));
+    try {
+      mkdirSync(MIGRATION_REPORTS_DIR, { recursive: true });
+      filePath = path.join(MIGRATION_REPORTS_DIR, `${runId}-${reportType}.json`);
+      writeFileSync(filePath, JSON.stringify(payload, null, 2));
+    } catch {
+      filePath = null;
+    }
 
     await db.insert(migrationReports).values({
       runId,
@@ -106,8 +108,14 @@ export class MigrationReportService {
       ...report,
     });
 
-    const humanPath = path.join(MIGRATION_REPORTS_DIR, `${runId}-summary.txt`);
-    writeFileSync(humanPath, this.formatHumanReport(report));
+    let humanPath: string | null = null;
+    try {
+      mkdirSync(MIGRATION_REPORTS_DIR, { recursive: true });
+      humanPath = path.join(MIGRATION_REPORTS_DIR, `${runId}-summary.txt`);
+      writeFileSync(humanPath, this.formatHumanReport(report));
+    } catch {
+      humanPath = null;
+    }
 
     return { reportPath: humanPath, sections: report.sections.length };
   }

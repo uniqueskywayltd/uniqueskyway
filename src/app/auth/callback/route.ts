@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(`${origin}${AUTH_ROUTES.verifyEmail}?error=expired`);
+    return NextResponse.redirect(`${origin}${AUTH_ROUTES.register}?verify_error=expired`);
   }
 
   const { data } = await supabase.auth.getUser();
@@ -29,7 +29,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (type === "signup" || type === "verify") {
-    return NextResponse.redirect(`${origin}${AUTH_ROUTES.verifyEmail}?verified=1`);
+    const email = data.user?.email ?? "";
+    const params = new URLSearchParams({ verified: "1" });
+    if (email) params.set("email", email);
+    return NextResponse.redirect(`${origin}${AUTH_ROUTES.register}?${params.toString()}`);
   }
 
   if (type === "recovery") {

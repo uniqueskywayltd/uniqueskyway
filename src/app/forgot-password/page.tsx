@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
       panelImageAlt="Password recovery"
       footer={
         <>
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             <Link href="/login" className={authLinkClass}>Back to sign in</Link>
           </p>
           <div className="mt-5"><AuthTrustBar /></div>
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       }
     >
       {sent ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center text-sm text-emerald-800">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center text-sm text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100">
           If an account exists with that email, you will receive a password reset link shortly.
         </div>
       ) : (

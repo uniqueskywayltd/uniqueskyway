@@ -19,8 +19,8 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">System Settings</h1>
-        <p className="text-slate-400">Platform configuration console</p>
+        <h1 className="text-2xl font-semibold text-foreground">System Settings</h1>
+        <p className="text-muted-foreground">Platform configuration console</p>
       </div>
       <AdminSettingsManager settings={result.data} />
     </div>

@@ -41,19 +41,19 @@ export default async function AdminReferralsPage() {
 
       <div>
         <h2 className="mb-4 font-semibold">Top referrers</h2>
-        <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <div className="overflow-x-auto rounded-xl border border-border">
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-800 hover:bg-transparent">
-                <TableHead className="text-slate-400">Referrer</TableHead>
-                <TableHead className="text-slate-400">Code</TableHead>
-                <TableHead className="text-slate-400">Referrals</TableHead>
-                <TableHead className="text-slate-400">Commissions</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground">Referrer</TableHead>
+                <TableHead className="text-muted-foreground">Code</TableHead>
+                <TableHead className="text-muted-foreground">Referrals</TableHead>
+                <TableHead className="text-muted-foreground">Commissions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {overview.data.topReferrers.map((r) => (
-                <TableRow key={r.profileId} className="border-slate-800">
+                <TableRow key={r.profileId} className="border-border">
                   <TableCell>
                     <Link href={`/hard/auth/customers/${r.profileId}`} className="hover:underline">
                       {r.fullName}
@@ -72,19 +72,19 @@ export default async function AdminReferralsPage() {
       {commissions.success ? (
         <div>
           <h2 className="mb-4 font-semibold">Commission history</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="text-slate-400">Date</TableHead>
-                  <TableHead className="text-slate-400">Referrer</TableHead>
-                  <TableHead className="text-slate-400">Referred</TableHead>
-                  <TableHead className="text-slate-400">Amount</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Date</TableHead>
+                  <TableHead className="text-muted-foreground">Referrer</TableHead>
+                  <TableHead className="text-muted-foreground">Referred</TableHead>
+                  <TableHead className="text-muted-foreground">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {commissions.data.items.map((c) => (
-                  <TableRow key={c.id} className="border-slate-800">
+                  <TableRow key={c.id} className="border-border">
                     <TableCell className="text-sm">{new Date(c.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>{c.referrerName}</TableCell>
                     <TableCell>{c.referredName}</TableCell>

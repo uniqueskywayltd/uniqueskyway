@@ -1,5 +1,14 @@
-/**
+import {
 
+  ACTIVITY_FEED_CONFIG_DEFAULT,
+
+  MARKET_TICKER_CONFIG_DEFAULT,
+
+} from "@/lib/constants/trust-components";
+
+
+
+/**
  * System setting keys — stored in system_settings table.
 
  * Business rules (ROI, plans, referral %) are NOT seeded with production values until validated.
@@ -43,6 +52,10 @@ export const SYSTEM_SETTINGS = {
   DEFAULT_INVESTMENT_STATUS: "default_investment_status",
 
   PLATFORM_URL: "platform_url",
+
+  ACTIVITY_FEED_CONFIG: "activity_feed_config",
+
+  MARKET_TICKER_CONFIG: "market_ticker_config",
 
 } as const;
 
@@ -289,6 +302,30 @@ export const SYSTEM_SETTING_DEFINITIONS: Array<{
     description: "Production platform URL",
 
     isPublic: true,
+
+  },
+
+  {
+
+    key: SYSTEM_SETTINGS.ACTIVITY_FEED_CONFIG,
+
+    value: ACTIVITY_FEED_CONFIG_DEFAULT,
+
+    description: "Homepage activity feed display and seed behaviour",
+
+    isPublic: false,
+
+  },
+
+  {
+
+    key: SYSTEM_SETTINGS.MARKET_TICKER_CONFIG,
+
+    value: MARKET_TICKER_CONFIG_DEFAULT,
+
+    description: "Market overview ticker assets, provider, and refresh settings",
+
+    isPublic: false,
 
   },
 

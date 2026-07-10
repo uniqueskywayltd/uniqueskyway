@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
       panelImage="/brand/security.jpg"
       panelImageAlt="Password reset"
       footer={
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-muted-foreground">
           <Link href="/login" className={authLinkClass}>Back to sign in</Link>
         </p>
       }

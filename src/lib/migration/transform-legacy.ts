@@ -1,5 +1,6 @@
 import { normalizeTxType } from "./legacy-sql-parser";
 import {
+  buildUniqueUsernameMap,
   extractReferrerUsername,
   mapLegacyPlanToSlug,
   migrationIdempotencyKey,
@@ -16,18 +17,24 @@ import type {
 export function transformLegacyExtract(
   extract: LegacyExtract,
 ): MigrationTransformResult {
-  const users = extract.users.map((user) => ({
+  const usernameByLegacyId = buildUniqueUsernameMap(extract.users);
+
+  const users = extract.users.map((user) => {
+    const username = usernameByLegacyId.get(user.uId) ?? user.userName.trim();
+    return {
     legacyUserId: user.uId,
     email: user.email,
-    fullName: user.name.trim() || user.userName,
-    username: user.userName.trim(),
-    referralCode: user.userName.trim(),
+    fullName: user.name.trim() || username,
+    username,
+    referralCode: username,
     referredByUsername: extractReferrerUsername(user.ref),
     registeredAt: new Date(user.registeredAt || Date.now()),
     avatarFilename: sanitizeAvatarFilename(user.passport),
     status: "active" as const,
-    passwordResetRequired: true as const,
-  }));
+    legacyPassword: user.pass.trim(),
+    passwordResetRequired: !user.pass.trim(),
+  };
+  });
 
   const referralRelationships: TransformedReferralRelationship[] = [];
   for (const user of extract.users) {

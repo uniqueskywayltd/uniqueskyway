@@ -3,6 +3,8 @@ import { requireSuperAdmin } from "@/lib/auth/api-guard";
 import type { MigrationPhase } from "@/lib/migration/types";
 import { migrationOrchestratorService } from "@/lib/services/migration/migration-orchestrator.service";
 
+export const maxDuration = 300;
+
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
-  let body: { action?: string; phase?: MigrationPhase } = {};
+  let body: { action?: string; phase?: MigrationPhase; skipImages?: boolean } = {};
 
   try {
     body = await request.json();
@@ -44,6 +46,26 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const result = await migrationOrchestratorService.rollback(id);
     if (!result.success) {
       return NextResponse.json({ error: result.error.message }, { status: 500 });
+    }
+    return NextResponse.json(result.data);
+  }
+
+  if (body.action === "advance") {
+    const result = await migrationOrchestratorService.advanceRun(id, {
+      skipImages: body.skipImages ?? true,
+    });
+    if (!result.success) {
+      const details = result.error.details;
+      const message =
+        details instanceof Error
+          ? details.message
+          : typeof details === "object" && details !== null && "message" in details
+            ? String((details as { message: unknown }).message)
+            : result.error.message;
+      return NextResponse.json(
+        { error: result.error.message, details: message },
+        { status: 500 },
+      );
     }
     return NextResponse.json(result.data);
   }

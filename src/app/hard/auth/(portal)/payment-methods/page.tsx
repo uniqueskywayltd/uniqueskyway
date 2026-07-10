@@ -20,7 +20,7 @@ export default async function AdminPaymentMethodsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Payment Method Management</h1>
-        <p className="text-slate-400">Configure deposit methods, wallet addresses, and bank accounts</p>
+        <p className="text-muted-foreground">Configure deposit methods, wallet addresses, and bank accounts</p>
       </div>
       <AdminPaymentMethodsManager methods={result.data} />
     </div>

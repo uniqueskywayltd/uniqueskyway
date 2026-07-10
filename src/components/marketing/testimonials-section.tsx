@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Quote } from "lucide-react";
-import { section } from "@/components/marketing/marketing-ui";
+import { card, section } from "@/components/marketing/marketing-ui";
 import { testimonials } from "@/lib/constants/testimonials";
 import { cn } from "@/lib/utils";
 
@@ -23,25 +23,26 @@ export function TestimonialsSection() {
   const item = testimonials[index];
 
   return (
-    <section className="relative overflow-hidden" aria-label="Client testimonials">
+    <section
+      className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
+      aria-label="Client testimonials"
+    >
       <div className="absolute inset-0 -z-10">
         <Image
           src="/brand/testimonials-bg.jpg"
           alt=""
           fill
-          className="object-cover"
+          className="object-cover opacity-[0.14]"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-slate-950/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-slate-50/92 to-white/95 dark:from-slate-950/95 dark:via-slate-900/92 dark:to-slate-950/95" />
       </div>
 
       <div className={cn(section.container, section.padding)}>
         <div className="max-w-2xl">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
-            Testimonials
-          </p>
-          <h2 className={section.headingLight}>What our clients are saying</h2>
-          <p className={section.bodyLight}>
+          <p className={section.eyebrowSun}>Testimonials</p>
+          <h2 className={section.headingSun}>What our clients are saying</h2>
+          <p className={section.bodySun}>
             Real experiences from investors who value transparency, security, and
             long-term portfolio growth.
           </p>
@@ -55,17 +56,17 @@ export function TestimonialsSection() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.04] p-7 sm:p-9"
+              className={cn("mx-auto max-w-3xl p-7 sm:p-9", card.sun)}
               aria-live="polite"
             >
-              <Quote className="h-6 w-6 text-slate-500" aria-hidden />
-              <blockquote className="mt-4 text-base leading-relaxed text-slate-200 sm:text-lg">
+              <Quote className="h-6 w-6 text-primary/70" aria-hidden />
+              <blockquote className="mt-4 text-base font-medium leading-relaxed text-slate-800 dark:text-slate-200 sm:text-lg">
                 &ldquo;{item.quote}&rdquo;
               </blockquote>
-              <footer className="mt-8 border-t border-white/10 pt-5">
+              <footer className="mt-8 border-t border-slate-200 pt-5 dark:border-border">
                 <cite className="not-italic">
-                  <p className="font-semibold text-white">{item.name}</p>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="font-semibold text-slate-900 dark:text-slate-50">{item.name}</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
                     {item.occupation} · {item.location}
                   </p>
                 </cite>
@@ -88,7 +89,7 @@ export function TestimonialsSection() {
                 onClick={() => setIndex(i)}
                 className={cn(
                   "h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  i === index ? "w-8 bg-white/70" : "w-1.5 bg-white/25 hover:bg-white/40",
+                  i === index ? "w-8 bg-primary" : "w-1.5 bg-slate-300 hover:bg-slate-400",
                 )}
               />
             ))}

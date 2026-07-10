@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppProviders } from "@/components/providers/app-providers";
+import { themeInitScript } from "@/components/theme/theme-init-script";
 import { resolveAppUrl } from "@/lib/env";
 import "./globals.css";
 
@@ -38,11 +39,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
       { url: "/brand/favicon.webp", sizes: "32x32", type: "image/webp" },
       { url: "/brand/icon.webp", sizes: "176x176", type: "image/webp" },
     ],
-    apple: "/brand/icon.webp",
+    shortcut: [{ url: "/favicon.ico", sizes: "any" }],
+    apple: [{ url: "/brand/icon.webp", sizes: "176x176", type: "image/webp" }],
   },
+  manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     siteName: appName,
@@ -72,8 +76,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full`}>
-      <body className="min-h-full flex flex-col font-sans antialiased">
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/brand/favicon.webp" type="image/webp" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/brand/icon.webp" />
+      </head>
+      <body className="min-h-dvh flex flex-col font-sans antialiased">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

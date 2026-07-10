@@ -1,3 +1,64 @@
+# Milestone Report — Platform Wallets Phase 1 (Manual Launch)
+
+**Project:** Unique Sky Way (`uniqueskyway.com`)  
+**Milestone:** Platform Wallets — Phase 1  
+**Status:** Complete (local — not committed/deployed per instruction)  
+**Date:** July 6, 2026
+
+---
+
+## Executive Summary
+
+Phase 1 replaces hardcoded deposit wallet addresses with an admin-configurable **Platform Wallet** system. Customers select from active wallets during a guided 4-step deposit flow. Every deposit permanently stores a wallet snapshot. The existing deposit approval workflow, investment engine, and immutable ledger are unchanged.
+
+Phase 2 (blockchain monitoring) and Phase 3 (automatic deposits) can extend `auto_detection_enabled` and `required_confirmations` without schema changes.
+
+---
+
+## Quality Gates
+
+| Gate | Status |
+|------|--------|
+| `npm run type-check` | Pass |
+| `npm run lint` | Pass |
+| `npm run build` | Pass |
+| Platform Wallet CRUD (admin) | Implemented |
+| QR upload (`wallet-qr` bucket) | Implemented |
+| Customer 4-step deposit flow | Implemented |
+| Deposit wallet snapshots | Implemented |
+| Admin deposit queue enhancements | Implemented |
+| `platform_wallets_enabled` flag | Implemented |
+| RBAC (`platform_wallets.read/manage`) | Implemented |
+| Ledger / approval workflow preserved | Verified in code |
+
+---
+
+## Architecture
+
+### Platform Wallets
+
+- Table: `platform_wallets` (migration `0019_platform_wallets.sql`)
+- Company-owned; `created_by` / `updated_by` audit admin IDs only
+- Soft delete via `deleted_at`
+- Status: `active` | `inactive` | `archived` — only active wallets shown to customers
+
+### Wallet Selection Flow
+
+1. Choose investment plan  
+2. Choose platform wallet (active only)  
+3. View QR, address, instructions, network warning  
+4. Enter amount, TXID, optional screenshot, confirm payment → `submitted` (Awaiting Verification)
+
+### Historical Preservation
+
+`deposit_requests` columns: `platform_wallet_id`, `wallet_address_snapshot`, `asset_symbol_snapshot`, `asset_name_snapshot`, `network_snapshot`, `qr_code_path_snapshot`, `wallet_instructions_snapshot`
+
+### Approval Workflow (unchanged)
+
+Approve Deposit → verify → investment engine → ledger → investment → notifications → audit
+
+---
+
 # Milestone 10 Report — Production Readiness & Operational Documentation
 
 **Project:** Unique Sky Way (`uniqueskyway.com`)  
@@ -1028,6 +1089,45 @@ See `OPEN_ITEMS.md`. Critical path:
 ## Production Readiness Statement
 
 **The Unique Sky Way platform v1.0 is feature-complete and engineering-ready for staging validation.** All code quality gates pass. Documentation is complete. No critical or high-severity code defects were identified during final review. Production deployment should proceed only after live staging sign-off.
+
+---
+
+## Homepage Trust Components (July 2026)
+
+### Architecture
+
+```
+Homepage (marketing)
+├── MarketTickerStrip (lazy, below header)
+│   └── GET /api/market-ticker → MarketDataService → provider (mock/cached/live)
+└── ActivityFeedTicker (lazy, fixed bottom)
+    └── GET /api/activity-feed → ActivityFeedService
+            ├── Real events (read-only: profiles, deposits, withdrawals, investments)
+            ├── Manual / pinned rows (activity_feed table)
+            └── Seeded rows (activity_feed.is_seed) when real count < threshold
+
+Admin
+├── /hard/auth/activity-feed → ActivityFeedService + system_settings.activity_feed_config
+└── /hard/auth/market-settings → MarketDataService + system_settings.market_ticker_config
+
+Feature flags: activity_feed_enabled, seed_activity_enabled, market_ticker_enabled
+```
+
+### Design principles
+
+- UI-only enhancement — no changes to existing financial business logic
+- All display behaviour configurable from Admin (timing, seed retirement, assets, provider)
+- Privacy-first — masked names only (`John A.`), no emails
+- Performance — client components lazy-loaded; API responses cached
+- Accessibility — `prefers-reduced-motion` pauses animations; `aria-live` on activity card
+
+### Database
+
+| Table | Purpose |
+|-------|---------|
+| `activity_feed` | Seed, manual, and pinned activity items |
+
+Migration: `0018_trust_components.sql` — seeds feature flags, system settings, and table schema. Activity seed data via `scripts/seed-activity-feed.ts` (~100 records).
 
 ---
 

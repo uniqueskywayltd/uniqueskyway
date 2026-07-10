@@ -41,11 +41,11 @@ export function AdminFeatureFlagsManager({ flags }: { flags: FlagRow[] }) {
         return (
           <div
             key={def.key}
-            className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 px-4 py-4"
+            className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-4"
           >
             <div>
               <p className="font-medium font-mono text-sm">{def.key}</p>
-              <p className="text-sm text-slate-400">{def.description}</p>
+              <p className="text-sm text-muted-foreground">{def.description}</p>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant={enabled ? "default" : "outline"}>

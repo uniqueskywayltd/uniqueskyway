@@ -90,8 +90,18 @@ const GATE_EXEMPT_PATHS = new Set([
   "/api/health",
 ]);
 
+const GATE_EXEMPT_PREFIXES = [
+  "/api/auth/",
+  "/api/cron/",
+  "/api/hard/auth/",
+  "/hard/auth/",
+  "/api/activity-feed",
+  "/api/market-ticker",
+] as const;
+
 export function isGateExemptPath(pathname: string): boolean {
-  return GATE_EXEMPT_PATHS.has(pathname);
+  if (GATE_EXEMPT_PATHS.has(pathname)) return true;
+  return GATE_EXEMPT_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 function timingSafeEqualStrings(a: string, b: string): boolean {

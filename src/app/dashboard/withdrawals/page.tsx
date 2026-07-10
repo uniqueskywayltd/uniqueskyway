@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { getCustomerProfile, getSessionUser } from "@/lib/auth/session";
+import { getDashboardSession } from "@/lib/auth/session";
 import { withdrawalService } from "@/lib/services/withdrawal.service";
 import { PageHeader } from "@/components/design-system/page-header";
 import { WithdrawalsTable } from "@/components/dashboard/withdrawals-table";
@@ -36,10 +36,9 @@ async function WithdrawalsContent({
 }
 
 export default async function WithdrawalsPage({ searchParams }: { searchParams: SearchParams }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
-  const profile = await getCustomerProfile(user.authUserId);
-  if (!profile) redirect("/login");
+  const session = await getDashboardSession();
+  if (!session) redirect("/login");
+  const { profile } = session;
 
   const params = await searchParams;
 

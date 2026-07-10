@@ -35,7 +35,7 @@ export default async function AdminRiskPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold">Risk & Compliance Center</h1>
-        <p className="text-slate-400">Operational insights — no automated blocking</p>
+        <p className="text-muted-foreground">Operational insights — no automated blocking</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -45,19 +45,19 @@ export default async function AdminRiskPage() {
         <StatCard title="Rapid deposits" value={String(insights.data.rapidDeposits)} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="overflow-x-auto rounded-xl border border-border">
         <Table>
           <TableHeader>
-            <TableRow className="border-slate-800 hover:bg-transparent">
-              <TableHead className="text-slate-400">Time</TableHead>
-              <TableHead className="text-slate-400">Event</TableHead>
-              <TableHead className="text-slate-400">Severity</TableHead>
-              <TableHead className="text-slate-400">Profile</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Time</TableHead>
+              <TableHead className="text-muted-foreground">Event</TableHead>
+              <TableHead className="text-muted-foreground">Severity</TableHead>
+              <TableHead className="text-muted-foreground">Profile</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {events.data.items.map((e) => (
-              <TableRow key={e.id} className="border-slate-800">
+              <TableRow key={e.id} className="border-border">
                 <TableCell className="text-sm">{new Date(e.createdAt).toLocaleString()}</TableCell>
                 <TableCell>{e.title}</TableCell>
                 <TableCell>

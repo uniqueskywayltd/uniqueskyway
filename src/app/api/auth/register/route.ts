@@ -5,9 +5,9 @@ import {
   jsonSuccess,
   rateLimitedResponse,
 } from "@/lib/api/auth-route";
-import { registerSchema } from "@/lib/auth/validation";
+import { registerSchema, normalizeEmail } from "@/lib/auth/validation";
 import { authService } from "@/lib/services/auth.service";
-import { isDatabaseConfigured, isSupabaseConfigured } from "@/lib/env";
+import { isDatabaseConfigured, isStorageConfigured, isSupabaseConfigured } from "@/lib/env";
 
 const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
@@ -52,7 +52,17 @@ export async function POST(request: NextRequest) {
   if (limited) return limited;
 
   if (!isSupabaseConfigured() || !isDatabaseConfigured()) {
-    return jsonError("Service temporarily unavailable", 503);
+    return jsonError(
+      "Sign-up is unavailable right now. Our team has been notified — please try again shortly.",
+      503,
+    );
+  }
+
+  if (!isStorageConfigured()) {
+    return jsonError(
+      "Sign-up is temporarily unavailable. Please try again later or contact support.",
+      503,
+    );
   }
 
   const contentType = request.headers.get("content-type") ?? "";
@@ -90,8 +100,12 @@ export async function POST(request: NextRequest) {
   );
 
   if (!result.success) {
-    return jsonError(result.error.message, 400);
+    const status =
+      result.error.code === "FEATURE_DISABLED" || result.error.code === "MAINTENANCE"
+        ? 503
+        : 400;
+    return jsonError(result.error.message, status);
   }
 
-  return jsonSuccess({ redirectTo: "/check-email" });
+  return jsonSuccess({ email: normalizeEmail(parsed.data.email) });
 }

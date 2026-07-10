@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import { Loader2, Lock, Mail } from "lucide-react";
 import { AuthField, AuthInputIcon, authLinkClass, authSubmitClass } from "@/components/auth/auth-field";
@@ -12,7 +12,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
 function LoginFormInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +28,7 @@ function LoginFormInner() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           email: form.get("email"),
           password: form.get("password"),
@@ -42,8 +42,7 @@ function LoginFormInner() {
         return;
       }
 
-      router.push(data.redirectTo ?? "/dashboard");
-      router.refresh();
+      window.location.assign(data.redirectTo ?? "/dashboard");
     } catch {
       setError("Unable to sign in. Please try again.");
     } finally {
@@ -97,7 +96,7 @@ function LoginFormInner() {
 
       <div className="flex items-center gap-2.5">
         <Checkbox id="remember" name="remember" disabled={isLoading} />
-        <label htmlFor="remember" className="text-sm text-muted-foreground">
+        <label htmlFor="remember" className="text-sm font-medium text-foreground/80">
           Keep me signed in
         </label>
       </div>

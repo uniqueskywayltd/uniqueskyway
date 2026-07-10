@@ -15,7 +15,18 @@
     "db:verify": "tsx scripts/verify-infrastructure.ts",
     "bootstrap:admin": "tsx scripts/bootstrap-admin.ts",
     "migration": "tsx scripts/migration/run.ts",
-    "migration:dry-run": "tsx scripts/migration/run.ts --phase=offline"
+    "migration:dry-run": "tsx scripts/migration/run.ts --phase=offline",
+    "email:preview": "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://uniqueskyway.com} tsx scripts/render-email-samples.ts",
+    "build:namecheap": "NEXT_OUTPUT_STANDALONE=1 NODE_ENV=production next build && node scripts/prepare-standalone.mjs",
+    "build:cpanel": "NEXT_CPANEL=1 NODE_ENV=production next build",
+    "deploy:namecheap": "bash scripts/deploy-namecheap.sh",
+    "deploy:cpanel": "bash scripts/deploy-namecheap-shared.sh",
+    "start:cpanel": "NODE_ENV=production node server.cpanel.js",
+    "deploy:smoke": "bash scripts/post-deploy-smoke.sh",
+    "env:export-checklist": "bash scripts/export-vercel-env-checklist.sh",
+    "deploy:prod": "echo 'Deprecated: use npm run deploy:namecheap — see NAMECHEAP_MIGRATION.md' && exit 1",
+    "env:sync": "tsx scripts/sync-vercel-env.ts",
+    "vercel:ensure": "echo 'Deprecated: Vercel no longer used — see NAMECHEAP_MIGRATION.md' && exit 1"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -42,6 +53,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@napi-rs/keyring": "^1.3.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -1,6 +1,5 @@
 import type { ReactElement } from "react";
 import { render } from "@react-email/components";
-import { Resend } from "resend";
 import {
   BroadcastAnnouncementEmail,
   DailyRoiEmail,
@@ -24,47 +23,50 @@ import PasswordResetEmail from "@/emails/password-reset";
 import VerifyEmail from "@/emails/verify-email";
 import WelcomeEmail from "@/emails/welcome";
 import { brand } from "@/emails/components/layout";
+import { getAppConfig } from "@/lib/config";
 import { logger } from "@/lib/logging/logger";
-
-const FROM =
-  process.env.EMAIL_FROM ?? `Unique Sky Way <${brand.email}>`;
-
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  return new Resend(key);
-}
+import { getResendClient } from "./email/email-provider";
 
 type SendResult = { sent: boolean; error?: string };
 
 export class EmailService {
+  private getFrom(): string {
+    return getAppConfig().email.from;
+  }
+
   private async send(
     to: string,
     subject: string,
     html: string,
     text: string,
   ): Promise<SendResult> {
-    const resend = getResend();
+    const resend = getResendClient();
     if (!resend) {
       logger.warn("email", "RESEND_API_KEY not set — email skipped", { subject, to });
       return { sent: false, error: "EMAIL_NOT_CONFIGURED" };
     }
 
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to,
-      subject,
-      html,
-      text,
-    });
+    try {
+      const result = await resend.emails.send({
+        from: this.getFrom(),
+        to,
+        subject,
+        html,
+        text,
+      });
 
-    if (error) {
-      logger.error("email", "Send failed", { subject, to, error: error.message });
-      return { sent: false, error: error.message };
+      if (result.error) {
+        logger.error("email", "Send failed", { subject, to, error: result.error.message });
+        return { sent: false, error: result.error.message };
+      }
+
+      logger.info("email", "Email sent", { subject, to });
+      return { sent: true };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Send failed";
+      logger.error("email", "Send failed after retries", { subject, to, error: message });
+      return { sent: false, error: message };
     }
-
-    logger.info("email", "Email sent", { subject, to });
-    return { sent: true };
   }
 
   private async renderPair(
@@ -79,22 +81,26 @@ export class EmailService {
     to: string;
     name: string;
     verifyUrl: string;
+    otp?: string | null;
   }): Promise<SendResult> {
+    const otpLine = params.otp ? `\n\nVerification code: ${params.otp}` : "";
     const { html, text } = await this.renderPair(
-      WelcomeEmail({ name: params.name, verifyUrl: params.verifyUrl }),
-      `Welcome to ${brand.name}\n\nHello ${params.name},\n\nVerify your email: ${params.verifyUrl}\n\nSupport: ${brand.email}`,
+      WelcomeEmail({ name: params.name, verifyUrl: params.verifyUrl, otp: params.otp }),
+      `Hi ${params.name},\n\nVerify your email: ${params.verifyUrl}${otpLine}\n\nSupport: ${brand.email}`,
     );
-    return this.send(params.to, `Welcome to ${brand.name}`, html, text);
+    return this.send(params.to, `Verify your ${brand.name} email`, html, text);
   }
 
   async sendVerification(params: {
     to: string;
     name: string;
     verifyUrl: string;
+    otp?: string | null;
   }): Promise<SendResult> {
+    const otpLine = params.otp ? `\n\nVerification code: ${params.otp}` : "";
     const { html, text } = await this.renderPair(
-      VerifyEmail({ name: params.name, verifyUrl: params.verifyUrl }),
-      `Verify your ${brand.name} email\n\n${params.verifyUrl}\n\nSupport: ${brand.email}`,
+      VerifyEmail({ name: params.name, verifyUrl: params.verifyUrl, otp: params.otp }),
+      `Hi ${params.name},\n\nVerify your email: ${params.verifyUrl}${otpLine}\n\nSupport: ${brand.email}`,
     );
     return this.send(params.to, `Verify your ${brand.name} email`, html, text);
   }
@@ -103,10 +109,12 @@ export class EmailService {
     to: string;
     name: string;
     resetUrl: string;
+    otp?: string | null;
   }): Promise<SendResult> {
+    const otpLine = params.otp ? `\n\nReset code: ${params.otp}` : "";
     const { html, text } = await this.renderPair(
-      PasswordResetEmail({ name: params.name, resetUrl: params.resetUrl }),
-      `Reset your ${brand.name} password\n\n${params.resetUrl}\n\nSupport: ${brand.email}`,
+      PasswordResetEmail({ name: params.name, resetUrl: params.resetUrl, otp: params.otp }),
+      `Reset your ${brand.name} password\n\n${params.resetUrl}${otpLine}\n\nSupport: ${brand.email}`,
     );
     return this.send(params.to, `Reset your ${brand.name} password`, html, text);
   }
@@ -330,3 +338,5 @@ export class EmailService {
 }
 
 export const emailService = new EmailService();
+
+export { getEmailDiagnostics, type EmailDiagnostics } from "./email/email-provider";

@@ -1,8 +1,12 @@
 # Deployment Checklist — Unique Sky Way
 
+> **Hosting migration:** Production is moving from Vercel to **Namecheap VPS**.  
+> Use **[NAMECHEAP_MIGRATION.md](./NAMECHEAP_MIGRATION.md)** for the current deploy path.  
+> Sections below referencing Vercel are legacy — cron/env steps apply to `shared/.env.production` and server crontab instead.
+
 Use this checklist before every production deployment and mandatory before initial go-live. Check items in order; do not skip rollback preparation.
 
-**Target:** Vercel (app) + Supabase (database, auth, storage) + Resend (email)
+**Target:** Namecheap VPS (app) + Supabase (database, auth, storage) + Resend (email)
 
 ---
 
@@ -18,6 +22,8 @@ Use this checklist before every production deployment and mandatory before initi
 
 ### Vercel Project
 
+- [ ] **Official project name is `uniqueskyway` only** — never create or deploy to a second project
+- [ ] Run `npm run vercel:ensure` before any production deploy (verifies `.vercel/project.json`)
 - [ ] Repository connected; root directory set to `platform/`
 - [ ] Production domain configured (`uniqueskyway.com`, `www` redirect if applicable)
 - [ ] Vercel Pro plan active (required for cron jobs)
@@ -60,6 +66,8 @@ Set all variables in Vercel **Production** environment:
 **Security checks:**
 
 - [ ] No secrets committed to git
+- [ ] **Never copy secrets between Vercel projects via `vercel env pull`** — pull redacts values as empty strings
+- [ ] Use `npm run env:sync` (Supabase PAT) + manually set `RESEND_API_KEY` in the Vercel dashboard
 - [ ] Service role key never exposed to client bundle
 - [ ] `CRON_SECRET` differs between staging and production
 - [ ] `SITE_ACCESS_KEY` rotated from any shared preview links
@@ -190,6 +198,16 @@ Admin dashboard system health widget should show all green.
 
 ## 9. Smoke Tests
 
+Run automated checks first:
+
+```bash
+npm run deploy:smoke
+```
+
+- [ ] `GET /api/health` → 200
+- [ ] `GET /` → 200 (browser UA)
+- [ ] `GET /api/settings/public` → 200 (browser UA)
+
 Run critical path tests immediately after deploy. Full suite: `TEST_PLAN.md`.
 
 ### Auth
@@ -285,6 +303,7 @@ Document before enabling live traffic:
 
 ## Related Documents
 
+- `INCIDENT_REPORT.md` — production incident root cause and consolidation (Jul 2026)
 - `DEVELOPER_GUIDE.md` — technical reference
 - `TEST_PLAN.md` — full E2E checklist
 - `PRODUCTION_READINESS_REPORT.md` — readiness assessment

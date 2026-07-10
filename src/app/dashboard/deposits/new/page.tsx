@@ -1,52 +1,41 @@
 import { redirect } from "next/navigation";
-import { getCustomerProfile, getSessionUser } from "@/lib/auth/session";
-import { investmentPlanService } from "@/lib/services/investment-plan.service";
-import { paymentMethodService } from "@/lib/services/payment-method.service";
+import { getDashboardSession } from "@/lib/auth/session";
+import { getCustomerDepositAvailability } from "@/lib/services/deposit-availability.service";
 import { PageHeader } from "@/components/design-system/page-header";
 import { DepositForm } from "@/components/dashboard/deposit-form";
-import { ServiceErrorState } from "@/components/dashboard/service-error-state";
+import { DepositUnavailableState } from "@/components/dashboard/deposit-unavailable-state";
 import { isStorageConfigured } from "@/lib/env";
 
 export default async function NewDepositPage() {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
-  const profile = await getCustomerProfile(user.authUserId);
-  if (!profile) redirect("/login");
+  const session = await getDashboardSession();
+  if (!session) redirect("/login");
+  const { profile } = session;
 
-  const [plansResult, methodsResult] = await Promise.all([
-    investmentPlanService.listActive(),
-    paymentMethodService.listActive(),
-  ]);
-
-  if (!plansResult.success) {
-    return (
-      <div className="max-w-2xl space-y-6">
-        <PageHeader title="New deposit" description="Submit a deposit to fund your investment." />
-        <ServiceErrorState code={plansResult.error.code} message={plansResult.error.message} />
-      </div>
-    );
-  }
-
-  if (!methodsResult.success) {
-    return (
-      <div className="max-w-2xl space-y-6">
-        <PageHeader title="New deposit" description="Submit a deposit to fund your investment." />
-        <ServiceErrorState code={methodsResult.error.code} message={methodsResult.error.message} />
-      </div>
-    );
-  }
+  const availabilityResult = await getCustomerDepositAvailability();
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <PageHeader
-        title="New deposit"
-        description="Select a plan, choose your payment method, and submit for review."
-      />
-      <DepositForm
-        plans={plansResult.data}
-        paymentMethods={methodsResult.data}
-        storageAvailable={isStorageConfigured()}
-      />
+    <div className="max-w-3xl space-y-6">
+      <PageHeader title="New deposit" description="Submit a deposit to fund your investment." />
+
+      {!availabilityResult.success ? (
+        <DepositUnavailableState
+          reason="infrastructure"
+          title="Deposits unavailable"
+          message={availabilityResult.error.message}
+        />
+      ) : !availabilityResult.data.canDeposit ? (
+        <DepositUnavailableState
+          reason={availabilityResult.data.reason}
+          title={availabilityResult.data.title}
+          message={availabilityResult.data.message}
+        />
+      ) : (
+        <DepositForm
+          plans={availabilityResult.data.plans}
+          platformWallets={availabilityResult.data.wallets}
+          storageAvailable={isStorageConfigured()}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import { calculateAllLegacyBalances } from "./legacy-balance-calculator";
 import { normalizeTxType } from "./legacy-sql-parser";
-import { mapLegacyPlanToSlug, sanitizeAvatarFilename } from "./transform-rules";
+import {
+  buildUniqueUsernameMap,
+  mapLegacyPlanToSlug,
+  sanitizeAvatarFilename,
+} from "./transform-rules";
 import type {
   LegacyExtract,
   MigrationTransformResult,
@@ -13,6 +17,7 @@ export function validateLegacyExtract(
   const issues: MigrationValidationIssue[] = [];
   const emails = new Set<string>();
   const usernames = new Set<string>();
+  const uniqueUsernames = buildUniqueUsernameMap(extract.users);
 
   for (const user of extract.users) {
     if (!user.email) {
@@ -36,7 +41,7 @@ export function validateLegacyExtract(
       emails.add(user.email);
     }
 
-    const username = user.userName.trim().toLowerCase();
+    const username = (uniqueUsernames.get(user.uId) ?? user.userName).trim().toLowerCase();
     if (!username) {
       issues.push({
         severity: "error",
@@ -57,6 +62,20 @@ export function validateLegacyExtract(
       usernames.add(username);
     }
 
+    if (
+      user.userName.trim().toLowerCase() !== username &&
+      uniqueUsernames.get(user.uId) !== user.userName.trim()
+    ) {
+      issues.push({
+        severity: "warning",
+        code: "USER_USERNAME_DEDUPED",
+        message: `Username "${user.userName}" renamed to "${uniqueUsernames.get(user.uId)}" for user ${user.uId}`,
+        entityType: "user",
+        legacyId: user.uId,
+        email: user.email,
+      });
+    }
+
     if (user.passport && !sanitizeAvatarFilename(user.passport)) {
       issues.push({
         severity: "warning",
@@ -71,7 +90,10 @@ export function validateLegacyExtract(
 
   const userEmails = new Set(extract.users.map((u) => u.email.toLowerCase()));
   const usernameMap = new Map(
-    extract.users.map((u) => [u.userName.trim().toLowerCase(), u.email]),
+    extract.users.map((u) => [
+      (uniqueUsernames.get(u.uId) ?? u.userName).trim().toLowerCase(),
+      u.email,
+    ]),
   );
 
   for (const user of extract.users) {
@@ -142,8 +164,12 @@ export function validateReferralGraph(
   extract: LegacyExtract,
 ): MigrationValidationIssue[] {
   const issues: MigrationValidationIssue[] = [];
+  const uniqueUsernames = buildUniqueUsernameMap(extract.users);
   const usernameMap = new Map(
-    extract.users.map((u) => [u.userName.trim().toLowerCase(), u.uId]),
+    extract.users.map((u) => [
+      (uniqueUsernames.get(u.uId) ?? u.userName).trim().toLowerCase(),
+      u.uId,
+    ]),
   );
   const referredBy = new Map<number, number>();
 

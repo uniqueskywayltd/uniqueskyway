@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
+import { CopyButton } from "@/components/ui/copy-button";
+import { getAvatarUrl, getInitials } from "@/lib/utils/avatar";
 
 type ProfileData = {
   profile: {
@@ -145,12 +146,8 @@ export function ProfileForm({
     }
   }
 
-  const initials = data.profile.fullName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = getInitials(data.profile.fullName);
+  const referralLink = `${appUrl}/register?ref=${encodeURIComponent(data.profile.referralCode)}`;
 
   return (
     <form onSubmit={handleSave} className="space-y-8">
@@ -158,7 +155,7 @@ export function ProfileForm({
         <h2 className="text-lg font-semibold">Profile photo</h2>
         <div className="mt-4 flex items-center gap-6">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={data.profile.avatarPath ? `/api/storage/avatars/${data.profile.avatarPath}` : undefined} />
+            <AvatarImage src={getAvatarUrl(data.profile.avatarPath)} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div>
@@ -333,15 +330,31 @@ export function ProfileForm({
         ))}
       </section>
 
-      <section className="rounded-2xl border border-border/60 bg-card p-6">
-        <h2 className="text-lg font-semibold">Referral</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Your referral code</p>
-        <p className="mt-1 font-mono font-medium">{data.profile.referralCode}</p>
-        <Separator className="my-4" />
-        <p className="text-sm text-muted-foreground">Referral link</p>
-        <p className="mt-1 break-all font-mono text-sm">
-          {appUrl}/register?ref={data.profile.username}
-        </p>
+      <section className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">Referrals</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Share your code or link. New members enter it when they sign up.
+          </p>
+        </div>
+        <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Your referral code
+          </p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+            <p className="font-mono text-lg font-semibold tracking-wide">{data.profile.referralCode}</p>
+            <CopyButton value={data.profile.referralCode} label="Copy code" />
+          </div>
+        </div>
+        <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Share link
+          </p>
+          <p className="mt-2 break-all font-mono text-sm">{referralLink}</p>
+          <div className="mt-3">
+            <CopyButton value={referralLink} label="Copy link" />
+          </div>
+        </div>
       </section>
 
       <Button type="submit" disabled={saving}>

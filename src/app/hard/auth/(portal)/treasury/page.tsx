@@ -26,7 +26,7 @@ export default async function AdminTreasuryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Treasury operations</h1>
-          <p className="text-slate-400">Payout queue and withdrawal volume</p>
+          <p className="text-muted-foreground">Payout queue and withdrawal volume</p>
         </div>
         <Link href="/hard/auth/withdrawals" className={buttonVariants({ variant: "outline", size: "sm" })}>
           Withdrawal queue
@@ -62,7 +62,7 @@ export default async function AdminTreasuryPage() {
         {!queueResult.success ? (
           <ServiceErrorState code={queueResult.error.code} message={queueResult.error.message} />
         ) : queueResult.data.items.length === 0 ? (
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-8 text-center text-slate-400">
+          <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground">
             No payouts in the treasury queue.
           </div>
         ) : (
@@ -71,11 +71,11 @@ export default async function AdminTreasuryPage() {
               <Link
                 key={p.id}
                 href={`/hard/auth/withdrawals/${p.withdrawalRequestId}`}
-                className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-4 hover:border-slate-600"
+                className="flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:border-primary/40"
               >
                 <div>
                   <p className="font-medium">{p.customerName}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     {p.providerSlug} · {p.id.slice(0, 8)}…
                   </p>
                 </div>

@@ -1,0 +1,51 @@
+/** Fintech email design tokens — inline styles for client compatibility */
+export const emailColors = {
+  canvas: "#020617",
+  header: "#0f172a",
+  headerSub: "#020617",
+  headerBorder: "rgba(148, 163, 184, 0.16)",
+  footer: "#020617",
+  card: "#ffffff",
+  cardBorder: "#e2e8f0",
+  cardAccent: "#f59e0b",
+  heading: "#0f172a",
+  body: "#334155",
+  muted: "#64748b",
+  accent: "#f59e0b",
+  accentDark: "#d97706",
+  link: "#1e3a5f",
+  ctaBg: "#f59e0b",
+  ctaText: "#0f172a",
+  success: "#10b981",
+  successBg: "#ecfdf5",
+  successText: "#047857",
+  successBorder: "#a7f3d0",
+  warning: "#f59e0b",
+  warningBg: "#fffbeb",
+  warningText: "#b45309",
+  warningBorder: "#fde68a",
+  danger: "#ef4444",
+  dangerBg: "#fef2f2",
+  dangerText: "#b91c1c",
+  dangerBorder: "#fecaca",
+  neutralBg: "#f1f5f9",
+  neutralText: "#475569",
+  neutralBorder: "#e2e8f0",
+  detailBg: "#f8fafc",
+  detailHeaderBg: "#0f172a",
+  detailBorder: "#e2e8f0",
+  detailLabel: "#64748b",
+  detailValue: "#0f172a",
+  footerText: "#94a3b8",
+  footerMuted: "#64748b",
+  footerLink: "#e2e8f0",
+  footerBrand: "#f8fafc",
+  headerTagline: "#94a3b8",
+  headerMeta: "#64748b",
+} as const;
+
+export const emailFont =
+  '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
+export const emailMono =
+  'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace';

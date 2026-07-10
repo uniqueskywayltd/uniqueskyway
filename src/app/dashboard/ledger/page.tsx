@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { getCustomerProfile, getSessionUser } from "@/lib/auth/session";
+import { getDashboardSession } from "@/lib/auth/session";
 import { walletService } from "@/lib/services/wallet.service";
 import type { LedgerEntryType } from "@/types/domain";
 import { PageHeader } from "@/components/design-system/page-header";
@@ -89,10 +89,9 @@ export default async function LedgerPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
-  const profile = await getCustomerProfile(user.authUserId);
-  if (!profile) redirect("/login");
+  const session = await getDashboardSession();
+  if (!session) redirect("/login");
+  const { profile } = session;
 
   const params = await searchParams;
 

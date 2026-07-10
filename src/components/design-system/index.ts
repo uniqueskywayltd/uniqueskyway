@@ -6,6 +6,7 @@ export { FilterChips } from "./filter-chips";
 export { FormAlert } from "./form-alert";
 export { PageHeader } from "./page-header";
 export { PageLoader, TableSkeleton } from "./page-loader";
+export { DashboardPanelCard } from "./dashboard-panel-card";
 export { StatCard } from "./stat-card";
 export { StatusBadge, type StatusValue } from "./status-badge";
 export { TablePagination } from "./table-pagination";

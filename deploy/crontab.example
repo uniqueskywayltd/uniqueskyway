@@ -1,0 +1,12 @@
+# Unique Sky Way — server crontab (replaces Vercel Cron in vercel.json)
+# Edit on VPS: crontab -e
+#
+# Load secrets from shared env file:
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+
+# ROI accrual — daily 06:00 UTC
+0 6 * * * set -a && source /var/www/uniqueskyway/shared/.env.production && set +a && /var/www/uniqueskyway/shared/scripts/cron-hit.sh /api/cron/roi >> /var/www/uniqueskyway/shared/logs/cron-roi.log 2>&1
+
+# Notification email processor — every 15 minutes
+*/15 * * * * set -a && source /var/www/uniqueskyway/shared/.env.production && set +a && /var/www/uniqueskyway/shared/scripts/cron-hit.sh /api/cron/notifications >> /var/www/uniqueskyway/shared/logs/cron-notifications.log 2>&1

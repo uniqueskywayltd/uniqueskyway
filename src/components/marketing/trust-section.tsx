@@ -4,38 +4,55 @@ import { Award, Globe2, Shield, Users } from "lucide-react";
 import Image from "next/image";
 import { section } from "@/components/marketing/marketing-ui";
 
-/** Product capability highlights — matches hero dashboard preview */
-const platformStats = [
-  { label: "Ledger sync", value: "Live", suffix: "" },
-  { label: "Plan tiers", value: "4", suffix: "" },
-  { label: "Account security", value: "2FA", suffix: "" },
-];
+/** Homepage credibility metrics — investor community & track record */
+export const homepageStats = [
+  { label: "Assets under management", value: "$250M+", suffix: "" },
+  { label: "Active investors worldwide", value: "8,930+", suffix: "" },
+  { label: "Years serving clients", value: "9+", suffix: "since 2017" },
+  { label: "Investor portal access", value: "24/7", suffix: "" },
+] as const;
 
-/** Company track record — used on About, not duplicated on homepage */
+/** Company track record — About page & shared marketing */
 export const companyStats = [
-  { label: "Assets under management", value: "$12M+", suffix: "" },
-  { label: "Years of service", value: "9+", suffix: "years" },
-  { label: "Global markets", value: "72+", suffix: "markets" },
-  { label: "Client access", value: "24/7", suffix: "portal" },
-];
+  { label: "Assets under management", value: "$250M+", suffix: "" },
+  { label: "Active investors worldwide", value: "8,930+", suffix: "" },
+  { label: "Years of service", value: "9+", suffix: "since 2017" },
+  { label: "Global markets covered", value: "72+", suffix: "markets" },
+] as const;
 
-export function StatsBar({ stats = platformStats }: { stats?: typeof platformStats }) {
+type StatItem = { label: string; value: string; suffix: string };
+
+export function StatsBar({ stats = homepageStats }: { stats?: readonly StatItem[] }) {
   return (
-    <section className="border-y border-border/50 bg-primary text-primary-foreground" aria-label="Platform highlights">
-      <div className="mx-auto grid max-w-7xl grid-cols-3 gap-6 px-4 py-10 sm:gap-8 sm:px-6 sm:py-12 lg:px-8">
-        {stats.map((stat) => (
-          <div key={stat.label} className="text-center md:text-left">
-            <p className="text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl lg:text-4xl">
-              {stat.value}
+    <section
+      className="border-y border-border/50 bg-primary text-primary-foreground"
+      aria-label="Platform highlights"
+    >
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-8 md:grid-cols-4 md:gap-y-0">
+          {stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              className={`text-center md:text-left ${
+                index < stats.length - 1
+                  ? "md:border-r md:border-primary-foreground/15 md:pr-6 lg:pr-8"
+                  : ""
+              }`}
+            >
+              <p className="text-xl font-semibold tabular-nums tracking-tight sm:text-2xl lg:text-3xl">
+                {stat.value}
+              </p>
               {stat.suffix ? (
-                <span className="ml-1.5 text-xs font-normal text-primary-foreground/65 sm:text-sm">
+                <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wider text-primary-foreground/55 sm:text-xs">
                   {stat.suffix}
-                </span>
+                </p>
               ) : null}
-            </p>
-            <p className="mt-1.5 text-xs text-primary-foreground/65 sm:text-sm">{stat.label}</p>
-          </div>
-        ))}
+              <p className="mt-1.5 text-[11px] leading-snug text-primary-foreground/70 sm:text-sm">
+                {stat.label}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

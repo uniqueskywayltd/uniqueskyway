@@ -69,7 +69,7 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{investment.planName}</h1>
-          <p className="text-slate-400">{investment.customerEmail}</p>
+          <p className="text-muted-foreground">{investment.customerEmail}</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="capitalize">
@@ -80,54 +80,54 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <p className="text-xs text-slate-400">Principal</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Principal</p>
           <p className="text-xl font-semibold">{formatMoney(investment.principalAmount)}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <p className="text-xs text-slate-400">ROI credited</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">ROI credited</p>
           <p className="text-xl font-semibold">{formatMoney(investment.totalRoiCredited)}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <p className="text-xs text-slate-400">Daily earnings</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Daily earnings</p>
           <p className="text-xl font-semibold">{formatMoney(preview.dailyEarnings)}</p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <p className="text-xs text-slate-400">Progress</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-xs text-muted-foreground">Progress</p>
           <p className="text-xl font-semibold">{preview.progressPercent}%</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-3 text-sm">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-3 text-sm">
           <h2 className="font-semibold">Position details</h2>
           <div className="flex justify-between">
-            <span className="text-slate-400">Customer</span>
+            <span className="text-muted-foreground">Customer</span>
             <span>{investment.customerName}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Started</span>
+            <span className="text-muted-foreground">Started</span>
             <span>
               {investment.startedAt ? new Date(investment.startedAt).toLocaleDateString() : "—"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Matures</span>
+            <span className="text-muted-foreground">Matures</span>
             <span>
               {investment.maturesAt ? new Date(investment.maturesAt).toLocaleDateString() : "—"}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Next accrual</span>
+            <span className="text-muted-foreground">Next accrual</span>
             <span>{preview.nextAccrualDate ?? "—"}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">Est. maturity value</span>
+            <span className="text-muted-foreground">Est. maturity value</span>
             <span>{formatMoney(preview.estimatedMaturityValue)}</span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
           <h2 className="font-semibold">Admin actions</h2>
           <div className="flex flex-wrap gap-2">
             {investment.status === "active" && !investment.isPaused ? (
@@ -166,8 +166,8 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
             ) : null}
           </div>
 
-          <div className="space-y-3 border-t border-slate-800 pt-4">
-            <p className="text-xs text-slate-400">Manual adjustment (audit required)</p>
+          <div className="space-y-3 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">Manual adjustment (audit required)</p>
             <div className="grid gap-2 sm:grid-cols-2">
               <div>
                 <Label htmlFor="amount">Amount</Label>
@@ -218,32 +218,32 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-4 font-semibold">Activity timeline</h2>
           {investment.timeline.length ? (
             <ul className="space-y-3">
               {investment.timeline.map((event) => (
-                <li key={event.id} className="border-l-2 border-slate-700 pl-4 text-sm">
+                <li key={event.id} className="border-l-2 border-input pl-4 text-sm">
                   <p className="font-medium">{event.title}</p>
-                  <p className="text-slate-400">{event.description}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-muted-foreground">{event.description}</p>
+                  <p className="text-xs text-muted-foreground">
                     {new Date(event.createdAt).toLocaleString()}
                   </p>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-slate-400 text-sm">No events recorded yet.</p>
+            <p className="text-muted-foreground text-sm">No events recorded yet.</p>
           )}
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <div className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-4 font-semibold">ROI history</h2>
           {investment.roiHistory.length ? (
             <ul className="space-y-2 text-sm max-h-80 overflow-y-auto">
               {investment.roiHistory.map((entry) => (
-                <li key={entry.id} className="flex justify-between border-b border-slate-800 pb-2">
-                  <span className="text-slate-400">
+                <li key={entry.id} className="flex justify-between border-b border-border pb-2">
+                  <span className="text-muted-foreground">
                     {new Date(entry.createdAt).toLocaleDateString()}
                   </span>
                   <span className="font-medium text-emerald-400">
@@ -253,7 +253,7 @@ export function AdminInvestmentDetail({ investment }: { investment: AdminInvestm
               ))}
             </ul>
           ) : (
-            <p className="text-slate-400 text-sm">No ROI accruals yet.</p>
+            <p className="text-muted-foreground text-sm">No ROI accruals yet.</p>
           )}
         </div>
       </div>

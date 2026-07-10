@@ -43,3 +43,28 @@ export function migrationIdempotencyKey(
 export function money(value: number): string {
   return value.toFixed(2);
 }
+
+/** First legacy user keeps the username; later duplicates get a stable suffix. */
+export function buildUniqueUsernameMap(
+  users: Array<{ uId: number; userName: string }>,
+): Map<number, string> {
+  const used = new Set<string>();
+  const map = new Map<number, string>();
+  const sorted = [...users].sort((a, b) => a.uId - b.uId);
+
+  for (const user of sorted) {
+    const base = user.userName.trim() || `user${user.uId}`;
+    let candidate = base;
+    let key = candidate.toLowerCase();
+
+    if (used.has(key)) {
+      candidate = `${base}_${user.uId}`;
+      key = candidate.toLowerCase();
+    }
+
+    used.add(key);
+    map.set(user.uId, candidate);
+  }
+
+  return map;
+}

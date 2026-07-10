@@ -1,4 +1,6 @@
 {
+  "_deprecated": "Vercel is no longer used. Cron jobs moved to deploy/crontab.example on Namecheap VPS.",
+  "_migration": "See NAMECHEAP_MIGRATION.md",
   "crons": [
     {
       "path": "/api/cron/roi",

@@ -31,7 +31,7 @@ export default async function AdminReportsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold">Reports</h1>
-        <p className="text-slate-400">Export-ready financial and operational reports</p>
+        <p className="text-muted-foreground">Export-ready financial and operational reports</p>
       </div>
 
       {investments.success ? (
@@ -46,20 +46,20 @@ export default async function AdminReportsPage() {
       {daily.success ? (
         <div>
           <h2 className="mb-4 font-semibold">Daily activity (14 days)</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="text-slate-400">Date</TableHead>
-                  <TableHead className="text-slate-400">New users</TableHead>
-                  <TableHead className="text-slate-400">Deposits</TableHead>
-                  <TableHead className="text-slate-400">Volume</TableHead>
-                  <TableHead className="text-slate-400">ROI</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Date</TableHead>
+                  <TableHead className="text-muted-foreground">New users</TableHead>
+                  <TableHead className="text-muted-foreground">Deposits</TableHead>
+                  <TableHead className="text-muted-foreground">Volume</TableHead>
+                  <TableHead className="text-muted-foreground">ROI</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {daily.data.slice(0, 14).map((row) => (
-                  <TableRow key={row.date} className="border-slate-800">
+                  <TableRow key={row.date} className="border-border">
                     <TableCell>{row.date}</TableCell>
                     <TableCell>{row.newUsers}</TableCell>
                     <TableCell>{row.depositsApproved}</TableCell>
@@ -76,20 +76,20 @@ export default async function AdminReportsPage() {
       {roiRuns.success ? (
         <div>
           <h2 className="mb-4 font-semibold">ROI processing history</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="text-slate-400">Started</TableHead>
-                  <TableHead className="text-slate-400">Mode</TableHead>
-                  <TableHead className="text-slate-400">Processed</TableHead>
-                  <TableHead className="text-slate-400">ROI</TableHead>
-                  <TableHead className="text-slate-400">Status</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Started</TableHead>
+                  <TableHead className="text-muted-foreground">Mode</TableHead>
+                  <TableHead className="text-muted-foreground">Processed</TableHead>
+                  <TableHead className="text-muted-foreground">ROI</TableHead>
+                  <TableHead className="text-muted-foreground">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {roiRuns.data.items.map((run) => (
-                  <TableRow key={run.id} className="border-slate-800">
+                  <TableRow key={run.id} className="border-border">
                     <TableCell className="text-sm">{new Date(run.startedAt).toLocaleString()}</TableCell>
                     <TableCell className="capitalize">{run.mode.replace("_", " ")}</TableCell>
                     <TableCell>{run.investmentsProcessed}</TableCell>
@@ -108,18 +108,18 @@ export default async function AdminReportsPage() {
       {referrals.success ? (
         <div>
           <h2 className="mb-4 font-semibold">Top referrers</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-800 hover:bg-transparent">
-                  <TableHead className="text-slate-400">Referrer</TableHead>
-                  <TableHead className="text-slate-400">Referrals</TableHead>
-                  <TableHead className="text-slate-400">Commissions</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Referrer</TableHead>
+                  <TableHead className="text-muted-foreground">Referrals</TableHead>
+                  <TableHead className="text-muted-foreground">Commissions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {referrals.data.topReferrers.map((r) => (
-                  <TableRow key={r.profileId} className="border-slate-800">
+                  <TableRow key={r.profileId} className="border-border">
                     <TableCell>{r.fullName}</TableCell>
                     <TableCell>{r.referralCount}</TableCell>
                     <TableCell>{formatMoney(r.totalCommissions)}</TableCell>

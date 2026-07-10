@@ -21,7 +21,7 @@ export default function LoginPage() {
       ]}
       footer={
         <>
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link href="/register" className={authLinkClass}>Create free account</Link>
           </p>

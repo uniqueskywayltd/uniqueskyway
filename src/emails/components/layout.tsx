@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Heading,
@@ -9,40 +11,101 @@ import {
   Img,
   Link,
   Preview,
+  Row,
   Section,
   Text,
 } from "@react-email/components";
 import { resolveAppUrl } from "@/lib/env";
+import { emailColors, emailFont } from "./tokens";
 
 const appUrl = resolveAppUrl();
 
-const brand = {
+export const brand = {
   name: "Unique Sky Way",
+  tagline: "Secure Investor Platform",
   email: "info@uniqueskyway.com",
   url: appUrl,
-  logoUrl: `${appUrl}/brand/logo.png`,
+  logoUrl: `${appUrl}/brand/dark-logo.webp`,
+  iconUrl: `${appUrl}/brand/icon.webp`,
 };
+
+export type EmailBadgeTone = "success" | "warning" | "danger" | "neutral";
 
 type EmailLayoutProps = {
   preview: string;
   heading: string;
-  children: React.ReactNode;
+  children: ReactNode;
   cta?: { label: string; href: string };
+  badge?: { label: string; tone?: EmailBadgeTone };
 };
 
-export function EmailLayout({ preview, heading, children, cta }: EmailLayoutProps) {
+const badgeColors: Record<
+  EmailBadgeTone,
+  { bg: string; text: string; border: string }
+> = {
+  success: {
+    bg: emailColors.successBg,
+    text: emailColors.successText,
+    border: emailColors.successBorder,
+  },
+  warning: {
+    bg: emailColors.warningBg,
+    text: emailColors.warningText,
+    border: emailColors.warningBorder,
+  },
+  danger: {
+    bg: emailColors.dangerBg,
+    text: emailColors.dangerText,
+    border: emailColors.dangerBorder,
+  },
+  neutral: {
+    bg: emailColors.neutralBg,
+    text: emailColors.neutralText,
+    border: emailColors.neutralBorder,
+  },
+};
+
+export function EmailLayout({ preview, heading, children, cta, badge }: EmailLayoutProps) {
+  const year = new Date().getFullYear();
+  const badgeStyle = badge ? badgeColors[badge.tone ?? "neutral"] : null;
+
   return (
-    <Html>
-      <Head />
+    <Html lang="en">
+      <Head>
+        <meta name="color-scheme" content="light dark" />
+        <meta name="supported-color-schemes" content="light dark" />
+      </Head>
       <Preview>{preview}</Preview>
       <Body style={main}>
-        <Container style={container}>
-          <Section style={header}>
-            <Img src={brand.logoUrl} width="48" height="48" alt={brand.name} style={logo} />
-            <Text style={brandName}>{brand.name}</Text>
+        <Container style={shell}>
+          <Section style={headerSection}>
+            <Img
+              src={brand.logoUrl}
+              width="180"
+              height="60"
+              alt={brand.name}
+              style={logo}
+            />
+          </Section>
+
+          <Section style={headerSubSection}>
+            <Text style={headerTagline}>{brand.tagline}</Text>
+            <Text style={headerMeta}>Encrypted sessions · Immutable audit trail</Text>
           </Section>
 
           <Section style={card}>
+            {badge && badgeStyle ? (
+              <Text
+                style={{
+                  ...badgeBase,
+                  backgroundColor: badgeStyle.bg,
+                  color: badgeStyle.text,
+                  border: `1px solid ${badgeStyle.border}`,
+                }}
+              >
+                {badge.label}
+              </Text>
+            ) : null}
             <Heading style={headingStyle}>{heading}</Heading>
             {children}
             {cta ? (
@@ -54,79 +117,243 @@ export function EmailLayout({ preview, heading, children, cta }: EmailLayoutProp
             ) : null}
           </Section>
 
-          <Hr style={hr} />
-          <Text style={footer}>
-            © {new Date().getFullYear()} {brand.name}. All rights reserved.
-            <br />
-            <Link href={`mailto:${brand.email}`} style={link}>
-              {brand.email}
-            </Link>
-          </Text>
+          <Section style={footerSection}>
+            <Row style={footerRow}>
+              <Column align="center">
+                <Img
+                  src={brand.logoUrl}
+                  width="120"
+                  height="40"
+                  alt={brand.name}
+                  style={footerLogo}
+                />
+                <Text style={footerBrand}>{brand.name}</Text>
+                <Text style={footerCopy}>
+                  © {year} {brand.name}. All rights reserved.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href={brand.url} style={footerLink}>
+                    Website
+                  </Link>
+                  {" · "}
+                  <Link href={`${brand.url}/dashboard`} style={footerLink}>
+                    Dashboard
+                  </Link>
+                  {" · "}
+                  <Link href={`mailto:${brand.email}`} style={footerLink}>
+                    Support
+                  </Link>
+                  {" · "}
+                  <Link href={`${brand.url}/security`} style={footerLink}>
+                    Security
+                  </Link>
+                </Text>
+                <Hr style={footerDivider} />
+                <Text style={footerLegal}>
+                  This is an automated transactional message from {brand.name}. Do not
+                  reply to this address. For account assistance, contact{" "}
+                  <Link href={`mailto:${brand.email}`} style={footerLink}>
+                    {brand.email}
+                  </Link>
+                  .
+                </Text>
+                <Text style={footerSecure}>
+                  Secure investor communications · Fayetteville, Arkansas
+                </Text>
+              </Column>
+            </Row>
+          </Section>
         </Container>
       </Body>
     </Html>
   );
 }
 
-export { brand };
-
 const main = {
-  backgroundColor: "#f4f6f9",
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  backgroundColor: emailColors.canvas,
+  margin: "0",
+  padding: "40px 16px",
+  fontFamily: emailFont,
 };
 
-const container = { margin: "0 auto", padding: "40px 20px", maxWidth: "560px" };
-const header = { textAlign: "center" as const, marginBottom: "24px" };
-const logo = { borderRadius: "12px", margin: "0 auto" };
-const brandName = {
-  color: "#1e293b",
-  fontSize: "14px",
-  fontWeight: "600",
-  margin: "12px 0 0",
+const shell = {
+  margin: "0 auto",
+  maxWidth: "600px",
 };
+
+const headerSection = {
+  backgroundColor: emailColors.header,
+  borderRadius: "16px 16px 0 0",
+  padding: "32px 32px 24px",
+  textAlign: "center" as const,
+  border: `1px solid ${emailColors.headerBorder}`,
+  borderBottom: "none",
+};
+
+const logo = {
+  margin: "0 auto",
+  display: "block",
+};
+
+const headerSubSection = {
+  backgroundColor: emailColors.headerSub,
+  padding: "16px 32px 18px",
+  textAlign: "center" as const,
+  borderLeft: `1px solid ${emailColors.headerBorder}`,
+  borderRight: `1px solid ${emailColors.headerBorder}`,
+  borderBottom: `1px solid ${emailColors.headerBorder}`,
+};
+
+const headerTagline = {
+  color: emailColors.headerTagline,
+  fontSize: "11px",
+  fontWeight: "700",
+  letterSpacing: "0.16em",
+  textTransform: "uppercase" as const,
+  margin: "0 0 6px",
+  lineHeight: "16px",
+};
+
+const headerMeta = {
+  color: emailColors.headerMeta,
+  fontSize: "11px",
+  fontWeight: "500",
+  letterSpacing: "0.02em",
+  margin: "0",
+  lineHeight: "16px",
+};
+
 const card = {
-  backgroundColor: "#ffffff",
-  borderRadius: "16px",
-  padding: "32px",
-  border: "1px solid #e2e8f0",
+  backgroundColor: emailColors.card,
+  padding: "32px 32px 36px",
+  borderLeft: `1px solid ${emailColors.cardBorder}`,
+  borderRight: `1px solid ${emailColors.cardBorder}`,
+  borderTop: `3px solid ${emailColors.cardAccent}`,
 };
-const headingStyle = {
-  color: "#0f172a",
-  fontSize: "24px",
-  fontWeight: "600",
+
+const badgeBase = {
+  display: "inline-block",
+  fontSize: "11px",
+  fontWeight: "700",
+  letterSpacing: "0.08em",
+  textTransform: "uppercase" as const,
+  borderRadius: "999px",
+  padding: "6px 12px",
   margin: "0 0 16px",
+  lineHeight: "16px",
 };
+
+const headingStyle = {
+  color: emailColors.heading,
+  fontSize: "26px",
+  fontWeight: "700",
+  letterSpacing: "-0.02em",
+  lineHeight: "32px",
+  margin: "0 0 20px",
+};
+
 const buttonSection = { textAlign: "center" as const, marginTop: "28px" };
+
 const button = {
-  backgroundColor: "#1e3a5f",
+  backgroundColor: emailColors.ctaBg,
   borderRadius: "10px",
-  color: "#ffffff",
+  color: emailColors.ctaText,
+  fontSize: "14px",
+  fontWeight: "700",
+  textDecoration: "none",
+  padding: "14px 32px",
+  display: "inline-block",
+};
+
+const footerSection = {
+  backgroundColor: emailColors.footer,
+  borderRadius: "0 0 16px 16px",
+  padding: "32px 32px 36px",
+  border: `1px solid ${emailColors.headerBorder}`,
+  borderTop: "none",
+};
+
+const footerRow = { width: "100%" };
+
+const footerLogo = {
+  margin: "0 auto 12px",
+  display: "block",
+  opacity: "0.95",
+};
+
+const footerBrand = {
+  color: emailColors.footerBrand,
   fontSize: "14px",
   fontWeight: "600",
-  textDecoration: "none",
-  padding: "12px 28px",
-};
-const hr = { borderColor: "#e2e8f0", margin: "32px 0 16px" };
-const footer = {
-  color: "#64748b",
-  fontSize: "12px",
-  lineHeight: "20px",
+  margin: "0 0 6px",
   textAlign: "center" as const,
 };
-const link = { color: "#1e3a5f" };
+
+const footerCopy = {
+  color: emailColors.footerText,
+  fontSize: "12px",
+  lineHeight: "20px",
+  margin: "0 0 10px",
+  textAlign: "center" as const,
+};
+
+const footerLinks = {
+  color: emailColors.footerText,
+  fontSize: "12px",
+  lineHeight: "22px",
+  margin: "0 0 16px",
+  textAlign: "center" as const,
+};
+
+const footerLink = {
+  color: emailColors.footerLink,
+  textDecoration: "underline",
+};
+
+const footerDivider = {
+  borderColor: emailColors.headerBorder,
+  margin: "0 0 16px",
+};
+
+const footerLegal = {
+  color: emailColors.footerMuted,
+  fontSize: "11px",
+  lineHeight: "18px",
+  margin: "0 0 10px",
+  textAlign: "center" as const,
+};
+
+const footerSecure = {
+  color: emailColors.footerMuted,
+  fontSize: "10px",
+  fontWeight: "600",
+  letterSpacing: "0.08em",
+  textTransform: "uppercase" as const,
+  lineHeight: "16px",
+  margin: "0",
+  textAlign: "center" as const,
+};
 
 export const text = {
   primary: {
-    color: "#334155",
+    color: emailColors.body,
     fontSize: "15px",
-    lineHeight: "24px",
+    lineHeight: "26px",
     margin: "0 0 16px",
   },
   muted: {
-    color: "#64748b",
+    color: emailColors.muted,
     fontSize: "13px",
-    lineHeight: "20px",
+    lineHeight: "22px",
     margin: "16px 0 0",
   },
+  strong: {
+    color: emailColors.heading,
+    fontWeight: "600",
+  },
+};
+
+export const linkStyle = {
+  color: emailColors.link,
+  textDecoration: "underline",
 };

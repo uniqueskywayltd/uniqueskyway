@@ -39,24 +39,24 @@ export function AdminPaymentMethodsManager({ methods }: { methods: PaymentMethod
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-800">
+    <div className="overflow-x-auto rounded-xl border border-border">
       <Table>
         <TableHeader>
-          <TableRow className="border-slate-800 hover:bg-transparent">
-            <TableHead className="text-slate-400">Method</TableHead>
-            <TableHead className="text-slate-400">Type</TableHead>
-            <TableHead className="text-slate-400">Proof</TableHead>
-            <TableHead className="text-slate-400">Order</TableHead>
-            <TableHead className="text-slate-400">Status</TableHead>
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="text-muted-foreground">Method</TableHead>
+            <TableHead className="text-muted-foreground">Type</TableHead>
+            <TableHead className="text-muted-foreground">Proof</TableHead>
+            <TableHead className="text-muted-foreground">Order</TableHead>
+            <TableHead className="text-muted-foreground">Status</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
           {methods.map((m) => (
-            <TableRow key={m.id} className="border-slate-800">
+            <TableRow key={m.id} className="border-border">
               <TableCell>
                 <p className="font-medium">{m.name}</p>
-                <p className="text-xs text-slate-400 font-mono">{m.slug}</p>
+                <p className="text-xs text-muted-foreground font-mono">{m.slug}</p>
               </TableCell>
               <TableCell className="capitalize">{m.methodType.replace(/_/g, " ")}</TableCell>
               <TableCell>{m.requiresProof ? "Required" : "No"}</TableCell>

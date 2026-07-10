@@ -20,7 +20,7 @@ export default async function AdminFeatureFlagsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Feature Flags</h1>
-        <p className="text-slate-400">Runtime toggles — every change is audited</p>
+        <p className="text-muted-foreground">Runtime toggles — every change is audited</p>
       </div>
       <AdminFeatureFlagsManager flags={result.data} />
     </div>

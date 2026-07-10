@@ -12,6 +12,7 @@ export { settingsService } from "./settings.service";
 export { walletService } from "./wallet.service";
 export { depositService } from "./deposit.service";
 export { paymentMethodService } from "./payment-method.service";
+export { platformWalletService } from "./platform-wallet.service";
 export { investmentPlanService } from "./investment-plan.service";
 export { portfolioService } from "./portfolio.service";
 export { investmentEngine } from "./investment-engine.service";

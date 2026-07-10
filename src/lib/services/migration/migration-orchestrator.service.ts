@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { eq } from "drizzle-orm";
+import { existsSync, readFileSync } from "node:fs";
+import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import {
   migrationBalanceExceptions,
@@ -8,7 +8,7 @@ import {
   migrationReports,
   migrationRuns,
 } from "@/db/schema";
-import { DEFAULT_LEGACY_SQL_PATH } from "@/lib/migration/constants";
+import { DEFAULT_LEGACY_SQL_PATH, resolveLegacySqlPath } from "@/lib/migration/constants";
 import { extractLegacyData } from "@/lib/migration/legacy-sql-parser";
 import { transformLegacyExtract } from "@/lib/migration/transform-legacy";
 import { validateMigration } from "@/lib/migration/validate-legacy";
@@ -34,6 +34,17 @@ type RunContext = {
   transformed?: MigrationTransformResult;
   validationIssues?: MigrationValidationIssue[];
 };
+
+const PHASE_ORDER: MigrationPhase[] = [
+  "extract",
+  "validate",
+  "transform",
+  "load",
+  "verify",
+  "report",
+];
+
+const STUCK_RUN_MS = 15 * 60 * 1000;
 
 export class MigrationOrchestratorService {
   private runContext = new Map<string, RunContext>();
@@ -89,16 +100,192 @@ export class MigrationOrchestratorService {
 
   async listRuns(limit = 20) {
     try {
+      await this.recoverStuckRuns();
       const db = getDb();
       const runs = await db
         .select()
         .from(migrationRuns)
-        .orderBy(migrationRuns.createdAt)
+        .orderBy(desc(migrationRuns.createdAt))
         .limit(limit);
       return ok(runs);
     } catch (error) {
       return fail("MIGRATION_RUN_LIST", "Failed to list migration runs", error);
     }
+  }
+
+  getSourcePreview(sourcePath?: string) {
+    try {
+      const path = resolveLegacySqlPath(sourcePath ?? DEFAULT_LEGACY_SQL_PATH);
+      if (!existsSync(path)) {
+        return fail("LEGACY_SQL_MISSING", `Legacy SQL not found at ${path}`);
+      }
+      const sqlContent = readFileSync(path, "utf-8");
+      const extract = extractLegacyData(path, sqlContent);
+      return ok({
+        sourcePath: path,
+        users: extract.stats.userCount,
+        transactions: extract.stats.transactionCount,
+        admins: extract.stats.adminCount,
+      });
+    } catch (error) {
+      return fail("LEGACY_SQL_PREVIEW", "Failed to read legacy SQL source", error);
+    }
+  }
+
+  async recoverStuckRuns() {
+    const db = getDb();
+    const cutoff = new Date(Date.now() - STUCK_RUN_MS);
+    const stuck = await db
+      .select()
+      .from(migrationRuns)
+      .where(eq(migrationRuns.status, "running"));
+
+    for (const run of stuck) {
+      const started = run.startedAt ?? run.createdAt;
+      if (started < cutoff) {
+        await db
+          .update(migrationRuns)
+          .set({
+            status: "failed",
+            errorMessage:
+              "Migration timed out or was interrupted. Start a new run or resume from the migration dashboard.",
+            completedAt: new Date(),
+          })
+          .where(eq(migrationRuns.id, run.id));
+      }
+    }
+  }
+
+  private async getCompletedPhases(runId: string): Promise<MigrationPhase[]> {
+    const db = getDb();
+    const rows = await db
+      .select({ phase: migrationCheckpoints.phase })
+      .from(migrationCheckpoints)
+      .where(eq(migrationCheckpoints.runId, runId));
+    return [...new Set(rows.map((r) => r.phase))];
+  }
+
+  async advanceRun(
+    runId: string,
+    options?: Partial<MigrationRunOptions>,
+  ): Promise<
+    ServiceResult<{
+      done: boolean;
+      status: string;
+      phase: MigrationPhase | null;
+      result: Record<string, unknown>;
+      stats?: MigrationRunStats;
+    }>
+  > {
+    await this.recoverStuckRuns();
+
+    const runResult = await this.getRun(runId);
+    if (!runResult.success) return runResult;
+    const run = runResult.data;
+
+    if (run.status === "completed") {
+      const stats = await this.buildStats(runId);
+      return ok({
+        done: true,
+        status: "completed",
+        phase: null,
+        result: {},
+        stats,
+      });
+    }
+
+    const completed = await this.getCompletedPhases(runId);
+    const nextPhase = PHASE_ORDER.find((phase) => !completed.includes(phase));
+
+    if (!nextPhase) {
+      if (run.status === "rolled_back") {
+        const stats = await this.buildStats(runId);
+        return ok({
+          done: true,
+          status: run.status,
+          phase: null,
+          result: {},
+          stats,
+        });
+      }
+
+      const db = getDb();
+      const stats = await this.buildStats(runId);
+      await db
+        .update(migrationRuns)
+        .set({
+          status: "completed",
+          completedAt: new Date(),
+          stats,
+          currentPhase: "report",
+        })
+        .where(eq(migrationRuns.id, runId));
+      return ok({
+        done: true,
+        status: "completed",
+        phase: null,
+        result: {},
+        stats,
+      });
+    }
+
+    if (run.status === "failed" || run.status === "pending") {
+      const db = getDb();
+      await db
+        .update(migrationRuns)
+        .set({ status: "running", errorMessage: null })
+        .where(eq(migrationRuns.id, runId));
+    }
+
+    const phaseResult = await this.runPhase(runId, nextPhase, options);
+    if (!phaseResult.success) return phaseResult;
+
+    if (nextPhase === "validate") {
+      const errors = (phaseResult.data.errors as number) ?? 0;
+      if (errors > 0 && !run.dryRun) {
+        const db = getDb();
+        await db
+          .update(migrationRuns)
+          .set({
+            status: "failed",
+            errorMessage: `Migration aborted: ${errors} validation errors`,
+            completedAt: new Date(),
+          })
+          .where(eq(migrationRuns.id, runId));
+        return fail(
+          "VALIDATION_FAILED",
+          `Migration aborted: ${errors} validation errors`,
+          phaseResult.data,
+        );
+      }
+    }
+
+    if (nextPhase === "report") {
+      const db = getDb();
+      const stats = await this.buildStats(runId);
+      await db
+        .update(migrationRuns)
+        .set({
+          status: "completed",
+          completedAt: new Date(),
+          stats,
+        })
+        .where(eq(migrationRuns.id, runId));
+      return ok({
+        done: true,
+        status: "completed",
+        phase: nextPhase,
+        result: phaseResult.data,
+        stats,
+      });
+    }
+
+    return ok({
+      done: false,
+      status: "running",
+      phase: nextPhase,
+      result: phaseResult.data,
+    });
   }
 
   async runPhase(
@@ -225,7 +412,7 @@ export class MigrationOrchestratorService {
     sourcePath: string,
     ctx: RunContext,
   ): Promise<Record<string, unknown>> {
-    const path = sourcePath || DEFAULT_LEGACY_SQL_PATH;
+    const path = resolveLegacySqlPath(sourcePath || DEFAULT_LEGACY_SQL_PATH);
     const sqlContent = readFileSync(path, "utf-8");
     const extract = extractLegacyData(path, sqlContent);
     ctx.extract = extract;

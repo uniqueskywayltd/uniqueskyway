@@ -2,6 +2,7 @@
 
 export const AUTH_ROUTES = {
   callback: "/auth/callback",
+  verify: "/auth/verify",
   login: "/login",
   register: "/register",
   forgotPassword: "/forgot-password",
@@ -23,8 +24,7 @@ export const GUEST_ONLY_ROUTES = [
 
 export const PUBLIC_AUTH_ROUTES = [
   "/auth/callback",
-  AUTH_ROUTES.verifyEmail,
-  AUTH_ROUTES.checkEmail,
+  AUTH_ROUTES.verify,
   AUTH_ROUTES.maintenance,
 ] as const;
 

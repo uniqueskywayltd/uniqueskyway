@@ -49,41 +49,40 @@ export default async function AdminWithdrawalsPage() {
         <ServiceErrorState code={result.error.code} message={result.error.message} />
       ) : result.data.items.length === 0 ? (
         <EmptyState
-          theme="dark"
           title="No withdrawals in queue"
           description="Pending withdrawal requests will appear here for review."
         />
       ) : (
-        <DataTable theme="dark">
+        <DataTable>
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-800 hover:bg-transparent">
-                <TableHead className="text-slate-400">Customer</TableHead>
-                <TableHead className="text-slate-400">Amount</TableHead>
-                <TableHead className="text-slate-400">Method</TableHead>
-                <TableHead className="text-slate-400">Destination</TableHead>
-                <TableHead className="text-slate-400">Status</TableHead>
-                <TableHead className="text-slate-400">Submitted</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground">Customer</TableHead>
+                <TableHead className="text-muted-foreground">Amount</TableHead>
+                <TableHead className="text-muted-foreground">Method</TableHead>
+                <TableHead className="text-muted-foreground">Destination</TableHead>
+                <TableHead className="text-muted-foreground">Status</TableHead>
+                <TableHead className="text-muted-foreground">Submitted</TableHead>
                 <TableHead className="sr-only">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {result.data.items.map((w) => (
-                <TableRow key={w.id} className="border-slate-800">
-                  <TableCell className="text-slate-200">{w.customerName}</TableCell>
-                  <TableCell className="font-medium tabular-nums text-white">
+                <TableRow key={w.id} className="border-border">
+                  <TableCell className="text-foreground">{w.customerName}</TableCell>
+                  <TableCell className="font-medium tabular-nums text-foreground">
                     {formatMoney(w.amount, w.currency)}
                   </TableCell>
-                  <TableCell className="capitalize text-slate-200">
+                  <TableCell className="capitalize text-foreground">
                     {w.methodSlug.replace(/_/g, " ")}
                   </TableCell>
-                  <TableCell className="max-w-[120px] truncate font-mono text-xs text-slate-300">
+                  <TableCell className="max-w-[120px] truncate font-mono text-xs text-foreground/80">
                     {w.walletAddress}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge theme="dark" status={w.status} />
+                    <StatusBadge status={w.status} />
                   </TableCell>
-                  <TableCell className="text-sm text-slate-400">
+                  <TableCell className="text-sm text-muted-foreground">
                     {w.submittedAt ? new Date(w.submittedAt).toLocaleDateString() : "—"}
                   </TableCell>
                   <TableCell>

@@ -16,7 +16,7 @@ import {
 } from "@/lib/constants/trust-components";
 import { FEATURE_FLAGS } from "@/lib/constants/feature-flags";
 import { SYSTEM_SETTINGS } from "@/lib/constants/system-settings";
-import { maskCustomerName } from "@/lib/utils/activity-feed";
+import { maskCustomerName, filterPublicActivityItems, isExcludedActivityName } from "@/lib/utils/activity-feed";
 import { featureFlagService } from "./feature-flags.service";
 import { settingsService } from "./settings.service";
 import { auditService } from "./audit.service";
@@ -213,7 +213,7 @@ export class ActivityFeedService {
       items: ActivityFeedItem[];
       config: Pick<
         ActivityFeedConfig,
-        "displayDurationMs" | "animationSpeedMs" | "nameCooldownMs"
+        "displayDurationMs" | "animationSpeedMs" | "nameCooldownMs" | "initialDelayMs"
       >;
     }>
   > {
@@ -228,6 +228,7 @@ export class ActivityFeedService {
           displayDurationMs: config.displayDurationMs,
           animationSpeedMs: config.animationSpeedMs,
           nameCooldownMs: config.nameCooldownMs,
+          initialDelayMs: config.initialDelayMs,
         },
       });
     }
@@ -244,7 +245,13 @@ export class ActivityFeedService {
         real.length < config.minimumRealActivityBeforeDisablingSeedData;
 
       const manualAndSeed = await this.loadStoredActivities(useSeed, config.maxVisibleHistory);
-      const merged = shuffleNoConsecutive([...manualAndSeed.filter((i) => i.isPinned), ...real, ...manualAndSeed.filter((i) => !i.isPinned)]);
+      const merged = filterPublicActivityItems(
+        shuffleNoConsecutive([
+          ...manualAndSeed.filter((i) => i.isPinned),
+          ...real,
+          ...manualAndSeed.filter((i) => !i.isPinned),
+        ]),
+      );
 
       return ok({
         enabled: true,
@@ -253,6 +260,7 @@ export class ActivityFeedService {
           displayDurationMs: config.displayDurationMs,
           animationSpeedMs: config.animationSpeedMs,
           nameCooldownMs: config.nameCooldownMs,
+          initialDelayMs: config.initialDelayMs,
         },
       });
     } catch (error) {
@@ -305,6 +313,7 @@ export class ActivityFeedService {
       .limit(15);
 
     for (const p of recentProfiles) {
+      if (isExcludedActivityName(maskCustomerName(p.fullName))) continue;
       items.push({
         id: `real-reg-${p.id}`,
         type: "registration",
@@ -339,6 +348,7 @@ export class ActivityFeedService {
       .limit(15);
 
     for (const d of recentDeposits) {
+      if (isExcludedActivityName(maskCustomerName(d.fullName))) continue;
       items.push({
         id: `real-dep-${d.id}`,
         type: "deposit",
@@ -373,6 +383,7 @@ export class ActivityFeedService {
       .limit(15);
 
     for (const w of recentWithdrawals) {
+      if (isExcludedActivityName(maskCustomerName(w.fullName))) continue;
       items.push({
         id: `real-wd-${w.id}`,
         type: "withdrawal",
@@ -407,6 +418,7 @@ export class ActivityFeedService {
       .limit(15);
 
     for (const inv of recentInvestments) {
+      if (isExcludedActivityName(maskCustomerName(inv.fullName))) continue;
       items.push({
         id: `real-inv-${inv.id}`,
         type: "investment",

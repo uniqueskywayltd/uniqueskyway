@@ -10,6 +10,8 @@ export type ActivityFeedConfig = {
   nameCooldownMs: number;
   /** Registration pop-ups only show within this window (default 24 hours). */
   registrationDisplayWindowMs: number;
+  /** Wait before showing the first pop-up (default 2 minutes). */
+  initialDelayMs: number;
 };
 
 export type MarketAssetKey =
@@ -34,13 +36,14 @@ export type MarketTickerConfig = {
 };
 
 export const ACTIVITY_FEED_CONFIG_DEFAULT: ActivityFeedConfig = {
-  displayDurationMs: 76_000,
+  displayDurationMs: 120_000,
   animationSpeedMs: 400,
   maxVisibleHistory: 50,
   minimumRealActivityBeforeDisablingSeedData: 25,
   seedEnabled: true,
   nameCooldownMs: 60 * 60 * 1000,
   registrationDisplayWindowMs: 24 * 60 * 60 * 1000,
+  initialDelayMs: 120_000,
 };
 
 export const MARKET_TICKER_CONFIG_DEFAULT: MarketTickerConfig = {

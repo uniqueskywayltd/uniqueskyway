@@ -130,11 +130,24 @@ export function AdminActivityFeedManager({ items, config, realActivityCount }: P
               type="number"
               value={cfg.displayDurationMs}
               onChange={(e) =>
-                setCfg({ ...cfg, displayDurationMs: Number(e.target.value) || 76_000 })
+                setCfg({ ...cfg, displayDurationMs: Number(e.target.value) || 120_000 })
               }
               className="mt-1.5 border-input bg-background"
             />
-            <p className="mt-1 text-xs text-muted-foreground">Default 76000 (76 seconds)</p>
+            <p className="mt-1 text-xs text-muted-foreground">Default 120000 (2 minutes)</p>
+          </div>
+          <div>
+            <Label htmlFor="initialDelayMs">Initial delay (ms)</Label>
+            <Input
+              id="initialDelayMs"
+              type="number"
+              value={cfg.initialDelayMs ?? 120_000}
+              onChange={(e) =>
+                setCfg({ ...cfg, initialDelayMs: Number(e.target.value) || 120_000 })
+              }
+              className="mt-1.5 border-input bg-background"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Wait before first pop-up (2 min)</p>
           </div>
           <div>
             <Label htmlFor="nameCooldownMs">Name cooldown (ms)</Label>

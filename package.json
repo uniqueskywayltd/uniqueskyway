@@ -24,6 +24,7 @@
     "start:cpanel": "NODE_ENV=production node server.cpanel.js",
     "deploy:smoke": "bash scripts/post-deploy-smoke.sh",
     "env:export-checklist": "bash scripts/export-vercel-env-checklist.sh",
+    "env:cpanel": "tsx scripts/generate-cpanel-env.ts",
     "deploy:prod": "echo 'Deprecated: use npm run deploy:namecheap — see NAMECHEAP_MIGRATION.md' && exit 1",
     "env:sync": "tsx scripts/sync-vercel-env.ts",
     "vercel:ensure": "echo 'Deprecated: Vercel no longer used — see NAMECHEAP_MIGRATION.md' && exit 1"

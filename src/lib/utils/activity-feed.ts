@@ -1,5 +1,24 @@
 import type { ActivityFeedItem } from "@/lib/constants/trust-components";
 
+/** Names excluded from public activity pop-ups (test accounts, demos). */
+const EXCLUDED_ACTIVITY_MASKED_NAMES = new Set([
+  "test u.",
+  "berthacamilla.",
+]);
+
+export function isExcludedActivityName(maskedOrFull: string | null | undefined): boolean {
+  if (!maskedOrFull) return false;
+  const normalized = maskedOrFull.trim().toLowerCase();
+  if (EXCLUDED_ACTIVITY_MASKED_NAMES.has(normalized)) return true;
+  if (/^test\b/.test(normalized) || normalized.startsWith("test ")) return true;
+  if (normalized.includes("berthacamilla")) return true;
+  return false;
+}
+
+export function filterPublicActivityItems(items: ActivityFeedItem[]): ActivityFeedItem[] {
+  return items.filter((item) => !isExcludedActivityName(item.customerNameMasked));
+}
+
 /** Mask a full name to "First L." format for public display */
 export function maskCustomerName(fullName: string): string {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);

@@ -9,5 +9,5 @@
 # This file only installs production dependencies (no build on server).
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/altosujd/repositories/alto-app
+    - export DEPLOYPATH=/home/altosujd/uniqueskyway.com
     - cd $DEPLOYPATH && npm install --omit=dev --no-audit --no-fund 2>/dev/null || true

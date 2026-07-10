@@ -15,7 +15,7 @@ cd "$ROOT"
 
 CPANEL_USER="${CPANEL_USER:-}"
 CPANEL_HOST="${CPANEL_HOST:-}"
-REMOTE_PATH="${REMOTE_PATH:-}"
+REMOTE_PATH="${REMOTE_PATH:-/home/altosujd/uniqueskyway.com}"
 SSH_PORT="${SSH_PORT:-21098}"
 
 if [[ -z "$CPANEL_USER" || -z "$CPANEL_HOST" || -z "$REMOTE_PATH" ]]; then

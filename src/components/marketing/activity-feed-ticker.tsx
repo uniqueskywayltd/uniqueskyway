@@ -108,10 +108,12 @@ export function ActivityFeedTicker() {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [enabled, setEnabled] = useState(false);
-  const [displayMs, setDisplayMs] = useState(76_000);
+  const [displayMs, setDisplayMs] = useState(120_000);
+  const [initialDelayMs, setInitialDelayMs] = useState(120_000);
   const [nameCooldownMs, setNameCooldownMs] = useState(60 * 60 * 1000);
   const [animMs, setAnimMs] = useState(400);
   const [paused, setPaused] = useState(false);
+  const [ready, setReady] = useState(false);
   const shownAtRef = useRef<Map<string, number>>(new Map());
   const [reduceMotion, setReduceMotion] = useState(
     () =>
@@ -136,7 +138,8 @@ export function ActivityFeedTicker() {
         if (!active) return;
         setEnabled(Boolean(data.enabled));
         setItems(data.items ?? []);
-        setDisplayMs(data.config?.displayDurationMs ?? 76_000);
+        setDisplayMs(data.config?.displayDurationMs ?? 120_000);
+        setInitialDelayMs(data.config?.initialDelayMs ?? 120_000);
         setNameCooldownMs(data.config?.nameCooldownMs ?? 60 * 60 * 1000);
         setAnimMs(data.config?.animationSpeedMs ?? 400);
         if (data.items?.length) {
@@ -153,6 +156,13 @@ export function ActivityFeedTicker() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!enabled || items.length === 0) return;
+    const delay = reduceMotion ? 0 : initialDelayMs;
+    const timer = window.setTimeout(() => setReady(true), delay);
+    return () => window.clearTimeout(timer);
+  }, [enabled, initialDelayMs, items.length, reduceMotion]);
+
   const advance = useCallback(() => {
     if (items.length <= 1) return;
     setVisible(false);
@@ -165,12 +175,12 @@ export function ActivityFeedTicker() {
   }, [animMs, items, nameCooldownMs, reduceMotion]);
 
   useEffect(() => {
-    if (!enabled || items.length === 0 || paused) return;
+    if (!enabled || !ready || items.length === 0 || paused) return;
     const timer = window.setInterval(advance, displayMs);
     return () => window.clearInterval(timer);
-  }, [advance, displayMs, enabled, items.length, paused]);
+  }, [advance, displayMs, enabled, items.length, paused, ready]);
 
-  if (!enabled || items.length === 0) return null;
+  if (!enabled || items.length === 0 || !ready) return null;
 
   const current = items[index]!;
 

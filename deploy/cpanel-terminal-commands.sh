@@ -1,7 +1,7 @@
 # Paste these commands into cPanel → Terminal (after clicking "I understand and want to proceed")
 
 # 1. Fix the Git repository — pull Unique Sky Way from GitHub
-cd ~/repositories/alto-app
+cd ~/uniqueskyway.com
 git remote -v
 git remote set-url origin https://github.com/uniqueskywayltd/uniqueskyway.git || git remote add origin https://github.com/uniqueskywayltd/uniqueskyway.git
 git fetch origin
